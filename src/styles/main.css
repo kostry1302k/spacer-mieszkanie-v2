@@ -1,0 +1,417 @@
+:root {
+  --bg: #1c1a18;
+  --hud-bg: rgba(28, 26, 24, 0.72);
+  --hud-fg: #f2ede6;
+  --hud-muted: #b8b0a5;
+  --radius: 10px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--hud-fg);
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#app,
+#scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#scene {
+  display: block;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: var(--hud-bg);
+  font-size: 13px;
+}
+
+.fps {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--hud-bg);
+  color: var(--hud-muted);
+  font: 12px ui-monospace, Menlo, monospace;
+}
+
+.labels-layer {
+  position: fixed !important;
+  inset: 0;
+  pointer-events: none;
+}
+
+.room-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--hud-bg);
+  color: var(--hud-fg);
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.room-label span {
+  color: var(--hud-muted);
+  font-size: 11px;
+}
+
+.panel {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--hud-bg);
+  font-size: 14px;
+  pointer-events: auto;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.panel > * + * {
+  margin-top: 8px;
+}
+
+.panel > summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+}
+
+.panel > summary::-webkit-details-marker,
+.rooms summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (pointer: fine) {
+  .panel > summary {
+    display: none;
+  }
+  .panel > summary + * {
+    margin-top: 0;
+  }
+}
+
+.panel label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  cursor: pointer;
+}
+
+.panel input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #c9a27a;
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.segmented button {
+  flex: 1;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--hud-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.segmented button.active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Spacer: celownik, podpowiedź, ekran startowy, przyciemnienie */
+.crosshair {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.45);
+}
+
+.hint {
+  position: fixed;
+  left: 50%;
+  top: calc(50% + 28px);
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  background: var(--hud-bg);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 16, 0.45);
+  pointer-events: auto;
+}
+
+.overlay-card {
+  width: min(380px, 100%);
+  padding: 24px;
+  border-radius: 14px;
+  background: rgba(28, 26, 24, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+.overlay-card h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.overlay-status {
+  margin: 0 0 16px;
+  color: var(--hud-muted);
+  font-size: 13px;
+}
+
+.keys {
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+  font-size: 14px;
+  line-height: 2;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 22px;
+  margin-right: 3px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.14);
+  font: 12px/20px ui-monospace, Menlo, monospace;
+  text-align: center;
+}
+
+.primary {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: #c9a27a;
+  color: #1c1a18;
+  font: 600 15px system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.fade {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.18s;
+  pointer-events: none;
+}
+
+.fade.on {
+  opacity: 1;
+}
+
+/* Prawa kolumna: lista pokoi i minimapa */
+.sidebar {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.minimap {
+  border-radius: var(--radius);
+  background: var(--hud-bg);
+}
+
+.rooms {
+  position: relative;
+  border-radius: var(--radius);
+  background: var(--hud-bg);
+  font-size: 14px;
+}
+
+.rooms summary {
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.rooms summary::after {
+  content: ' ▾';
+  color: var(--hud-muted);
+}
+
+.rooms[open] summary::after {
+  content: ' ▴';
+}
+
+.rooms-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0 6px 6px;
+}
+
+.rooms-list button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--hud-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rooms-list button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.panel,
+.sidebar {
+  z-index: 2;
+}
+
+/* Joystick (ekran dotykowy) */
+.joystick {
+  position: fixed;
+  left: -60px;
+  top: -60px;
+  width: 120px;
+  height: 120px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  background: rgba(28, 26, 24, 0.25);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 34px;
+  top: 34px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.key-icon {
+  display: inline-block;
+  width: 26px;
+  text-align: center;
+  color: #c9a27a;
+}
+
+.minimap {
+  cursor: zoom-in;
+}
+
+/* Telefon: menu zwinięte u góry po lewej, wolny dół ekranu dla kciuków */
+@media (pointer: coarse) {
+  .badge {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .panel {
+    top: calc(max(12px, env(safe-area-inset-top)) + 30px);
+    bottom: auto;
+    padding: 8px 12px;
+    max-width: calc(100vw - 170px);
+  }
+  .panel[open] {
+    max-width: none;
+  }
+  .panel label {
+    min-height: 36px;
+  }
+  .segmented button {
+    min-height: 38px;
+    padding: 0 10px;
+  }
+  .rooms summary {
+    padding: 8px 10px;
+  }
+  .rooms-list button {
+    min-height: 40px;
+  }
+  .hint {
+    top: auto;
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 8px);
+  }
+}
+
+.loading-pill {
+  position: fixed;
+  left: 50%;
+  top: max(12px, env(safe-area-inset-top));
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--hud-bg);
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 3;
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+
+# materiały źródłowe zostają lokalnie (repo publiczne), w repo tylko wymiary
+materialy/*
+!materialy/wymiary.md
+
+# lokalna konfiguracja podglądu w aplikacji Claude
+.claude/
