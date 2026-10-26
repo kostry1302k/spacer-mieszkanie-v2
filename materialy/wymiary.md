@@ -38,5 +38,37 @@ X w prawo, Y w dół (w stronę balkonu). Lica ścian w cm:
 - Łazienka 1.21.2: X 339,2–625,0, Y 136,0–296,1; szacht w lewym dolnym narożniku X 339,2–382,2, Y 228,4–296,1.
 - WC 1.21.6: X 635,9–821,8, Y 136,0–296,1; szacht w lewym dolnym narożniku X 635,9–670,9, Y 233,6–296,1.
 
-## Jeszcze niezmierzone (następny krok)
-Otwory drzwiowe i okienne (położenie, szerokość), drzwi balkonowe, balkon, grubość ścian zewnętrznych i międzylokalowych.
+## Otwory (zmierzone na karcie tą samą skalą; szerokość w świetle muru, ±1 cm)
+Wysokości – typowe (brak w dokumentach): drzwi wewnętrzne 205, wejściowe 210, okna parapet 85 / nadproże 235, drzwi balkonowe do 235.
+| Otwór | Ściana | Położenie | Szer. | Skrzydło |
+|---|---|---|---|---|
+| Drzwi wejściowe | hol, ściana dolna (od klatki) | X 866,0–968,2 | 102 | zawiasy przy X 968, do holu |
+| Hol → pokój dzienny | ścianka X 327,7–338,6 | Y 14,3–104,4 | 90 | zawiasy przy Y 14, do pokoju dziennego |
+| Hol → pokój 4 | ścianka Y −9,2–0 | X 498,7–588,3 | 90 | zawiasy przy X 588, do pokoju |
+| Hol → pokój 5 | ścianka Y −9,2–0 | X 690,4–779,9 | 90 | zawiasy przy X 690, do pokoju |
+| Hol → łazienka | ścianka Y 123,4–136,0 | X 444,2–534,3 | 90 | zawiasy przy X 534, do holu |
+| Hol → WC | ścianka Y 123,4–136,0 | X 710,5–800,6 | 90 | zawiasy przy X 801, do holu |
+| Okno pokoju 4 | ściana górna (północ) | X 406,9–517,1 | 110 | – |
+| Okno pokoju 5 (dwuskrzydłowe) | ściana górna (północ) | X 621,5–832,2 | 211 | – |
+| Okno pokoju dziennego | ściana górna (północ) | X 206,6–307,6 | 101 | – |
+| Przeszklenie balkonowe | ściana dolna pokoju dziennego | X 9,8–316,8 | 307 | stała część X 9,8–110; drzwi X 122–212 (zawiasy X 122) i X 216–306 (zawiasy X 306), oba do środka |
+
+## Ściany zewnętrzne i międzylokalowe (typowe, z kontrolą na rysunku)
+- Ściany z oknami (północ: pokoje 4, 5 i górna ściana pokoju dziennego): 40 (z ociepleniem; na karcie ok. 40).
+- Ściana balkonowa (południe): 30 (na karcie ok. 30).
+- Ściana wejściowa od klatki: 25; pozostałe ściany do sąsiadów: 20 (na karcie ok. 18–21).
+
+## Balkon – 5,15 m² (karta geodety; rzut sprzedażowy 5,21 – nie używamy)
+313,3 × 164,7 = 5,16 m²: X 2,3–315,6, od lica zewnętrznego ściany balkonowej (Y 900,4) do Y 1065,1. Balustrada na obwodzie.
+
+## Orientacja i otoczenie
+- Okna pokoi 4 i 5 (i okno pokoju dziennego) – **północ** (−Y), na dziedziniec: budynki osiedla w układzie na zakładkę w literę L.
+- Balkon – **południe** (+Y). Mieszkanie na 1. piętrze z 3. Na południe: droga, za nią budynek I etapu inwestycji.
+
+## Wysokość, grzejniki, elektryka
+- Wysokość pomieszczeń: **270**.
+- Grzejniki i elektryka – układ orientacyjny (jak w M12): grzejnik pod każdym oknem, przy balkonie na ścianie obok przeszklenia; w łazience grzejnik drabinkowy.
+
+## Wykończenie
+- Bez zmian ścian (układ deweloperski = jedyny wariant).
+- Jeden styl: `style/styl-1/` – moodboard „Orzech, trawertyn i zieleń” (`Projekty wnętrz — M12 Skypoint · M21 Sfera II.pdf`, 7 plansz) + zdjęcia inspiracji. Stan surowy jak w M12.
