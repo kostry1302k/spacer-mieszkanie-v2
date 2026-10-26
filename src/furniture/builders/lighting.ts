@@ -154,3 +154,22 @@ export const tableLamp: Builder = (p) => ({
   size: { w: 20, d: 20, h: 40 },
   collide: false,
 });
+
+/** Lampa wisząca z kloszem-kopułą (czarny mat) i mlecznym dyfuzorem od spodu. */
+export const pendantDome: Builder = (p) => {
+  const r = num(p, 'r', 22);
+  const ceiling = num(p, 'ceiling', 270);
+  const bottom = num(p, 'bottom', 150);
+  const shade = str(p, 'mat', 'blackMatte');
+  return {
+    parts: [
+      cylinder(shade, 6, 6, 2, 0, ceiling - 2, 0),
+      cylinder('cable', 0.3, 0.3, ceiling - bottom - 20, 0, bottom + 18, 0),
+      cylinder(shade, 4, r, r * 0.8, 0, bottom, 0, 40),
+      cylinder('opal', r - 1.5, r - 1.5, 0.3, 0, bottom + 0.5, 0, 40),
+    ],
+    size: { w: 2 * r, d: 2 * r, h: ceiling },
+    collide: false,
+    lights: [{ x: 0, y: bottom - 5, z: 0, intensity: num(p, 'cd', 40), color: color(p) }],
+  };
+};

@@ -43,8 +43,8 @@ export const baseCabinet: Builder = (p) => {
   if (p.appliance === 'sink') {
     // Komora zlewu (ciemna wnęka w blacie) i bateria.
     parts.push(span('sinkBlack', -w / 2 + 8, w / 2 - 8, h - 0.4, h + 0.2, -d / 2 + 8, d / 2 - 10, 1));
-    parts.push(cylinder('blackMetal', 1.6, 1.8, 26, 0, h, -d / 2 + 4));
-    parts.push(rod('blackMetal', 1.2, 18, 0, h + 25, -d / 2 + 12, 'z'));
+    parts.push(cylinder(str(p, 'tap', 'blackMetal'), 1.6, 1.8, 26, 0, h, -d / 2 + 4));
+    parts.push(rod(str(p, 'tap', 'blackMetal'), 1.2, 18, 0, h + 25, -d / 2 + 12, 'z'));
   }
   return { parts, size: { w, d, h }, collide: true };
 };

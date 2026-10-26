@@ -3,140 +3,189 @@ import type { FurnitureItem } from '../types';
 import { COMMON } from './common';
 
 /**
- * Styl 1 – „Mocca & Orzech”, ciepły ciemny minimalizm.
- * Źródło: materialy/style/styl-1/M12 Skypoint 57 — Styl 1.pdf (paleta – plansza 02, rzut – 03, widoki – 04–08, światło – 09).
+ * Styl „Orzech, trawertyn i zieleń”.
+ * Źródło: materialy/style/styl-1/Projekty wnętrz — M12 Skypoint · M21 Sfera II.pdf (paleta, rzut, widoki pomieszczeń).
  */
 
-// Paleta z planszy 02 (kolory orientacyjne, jak w dokumencie).
-const LEN = 0xcfc3b3; // ściany – kolor bazowy
-const SPIEK = 0xa89b8b; // kamień – spiek greige 60 × 120
+// Paleta z moodboardu (kolory orientacyjne).
+const WAPNO = 0xf4ece0; // tint farby wapiennej → ok. #EEE7DC
+const TRAWERTYN = 0xd8c8af;
+const ZIELEN = 0x2f4a3a;
+
+const limewash: MaterialSpec = { texture: 'paint', tint: WAPNO, roughness: 0.95, normalScale: 0.35 };
+const oakHerringbone: MaterialSpec = { texture: 'oakHerringbone', tint: 0xd0ae8e, roughness: 0.8 }; // dąb jodełka, olej
+const terrazzo: MaterialSpec = { tiles: { w: 60, h: 60 }, color: 0xe6ddd0, grout: 0xd6ccbe, roughness: 0.5, speckle: true };
 
 export const styl1Materials: Record<SurfaceKey, MaterialSpec> = {
   ...COMMON,
-  wall: { texture: 'paint', tint: 0xd6cab9, roughness: 0.95, normalScale: 0.3 }, // Len, głęboki mat
-  wallBathroom: { tiles: { w: 60, h: 120 }, color: SPIEK, grout: 0x8a7d6f, roughness: 0.7, veins: true }, // spiek pionowo, do sufitu
-  floor: { texture: 'oakHerringbone', tint: 0xc49e7c, roughness: 0.7 }, // dąb – jodełka, olej, lekko przydymiony
-  floorBathroom: { tiles: { w: 60, h: 120 }, color: 0x9f9282, grout: 0x8f8273, roughness: 0.75, veins: true },
-  ceiling: { texture: 'paint', tint: 0xf3ede4, roughness: 0.95, normalScale: 0.2 }, // ciepła biel
-  threshold: { texture: 'oakHerringbone', tint: 0xc49e7c, roughness: 0.7 }, // jedna podłoga, bez progów
-  concrete: { texture: 'smokedOak', tint: 0xb08d6c, roughness: 0.8 }, // balkon: płyty tarasowe drewnopodobne
-  doorInterior: { color: 0x4a3b31, roughness: 0.55 },
-  doorEntrance: { color: 0x3b2f28, roughness: 0.5 }, // od wewnątrz w odcieniu mocca
+  wall: limewash,
+  wallBathroom: limewash, // płytki w łazienkach to panele w danych mebli (do 120 / do sufitu)
+  floor: oakHerringbone,
+  floorBathroom: terrazzo,
+  ceiling: { ...limewash, normalScale: 0.12 },
+  threshold: oakHerringbone, // jedna podłoga, bez progów
+  concrete: { texture: 'smokedOak', tint: 0xb08d6c, roughness: 0.8 }, // balkon: deska tarasowa
+  doorInterior: { color: 0xece4d8, roughness: 0.6 }, // drzwi bezprzylgowe w kolorze ściany
+  doorEntrance: { texture: 'walnut', tint: 0xf5c8a0, roughness: 0.6 }, // od wewnątrz orzech
   bulb: { color: 0xfff6e8, roughness: 0.3 }, // nieużywane – lampy są meblami
 };
 
-/** Paleta mebli stylu 1 (nadpisuje FURNITURE_BASE). */
+/** Paleta mebli stylu (nadpisuje FURNITURE_BASE). */
 export const styl1FurnitureMaterials: Record<string, MaterialSpec> = {
-  walnut: { texture: 'walnut', tint: 0xc9a07c, roughness: 0.7 }, // dąb wędzony #5A4130 – lamele, fronty, panele
-  oakMocca: { texture: 'walnut', tint: 0x8c6c58, roughness: 0.6 }, // dąb barwiony na mocca – stół, stolik
-  felt: { color: 0x3b2f28, roughness: 1 }, // filc pod lamelami (mocca)
-  upholstery: { texture: 'fabric', tint: 0xdcc2a6, roughness: 1, normalScale: 0.8 }, // welur greige
-  boucle: { texture: 'fabric', tint: 0xd6c8b4, roughness: 1, normalScale: 1 }, // bouclé greige – łóżko
-  cushionLinen: { texture: 'fabric', tint: 0xfff2e0, roughness: 1 },
-  cushionMocca: { texture: 'fabric', tint: 0x5b473b, roughness: 0.9 }, // czekoladowy aksamit
-  linenWhite: { color: 0xe9e1d4, roughness: 0.95 }, // pościel len
-  duvet: { texture: 'fabric', tint: 0xe6ddcf, roughness: 1, normalScale: 0.4 },
-  throw: { texture: 'fabric', tint: 0x4a3a30, roughness: 1 }, // pled mocca
-  rug: { texture: 'carpet', tint: 0xcdbca6, roughness: 1 }, // wełna z wyraźnym splotem
-  lenLacquer: { color: LEN, roughness: 0.5 }, // górne szafki kuchni – „znikają”
-  glinaLacquer: { color: 0x847464, roughness: 0.85 }, // fronty szafy w sypialni (lakier mat jak ściana)
-  glinaPaint: { texture: 'paint', tint: 0x948575, roughness: 0.95, normalScale: 0.3 }, // ściana za łóżkiem
-  stoneGreige: { color: SPIEK, roughness: 0.5 }, // blaty i plecy kuchni, blat łazienki
-  woodTile: { texture: 'smokedOak', tint: 0xc8a37f, roughness: 0.55 }, // gres drewnopodobny w prysznicu
-  curtainMocca: { color: 0x3b2f28, roughness: 1, doubleSided: true },
-  curtainTaupe: { color: 0x8d7d6d, roughness: 1, doubleSided: true },
-  curtainSheer: { color: 0xe2d8ca, roughness: 1, opacity: 0.78, doubleSided: true },
-  shadeLinen: { color: 0xe8dfd1, roughness: 0.9, emissive: 0xffd9b0, glow: 1.2, doubleSided: true },
+  walnut: { texture: 'walnut', tint: 0xf5c8a0, roughness: 0.65 }, // orzech #5E3B26, mat
+  travertine: { tiles: { w: 150, h: 300 }, color: TRAWERTYN, grout: TRAWERTYN, roughness: 0.55, veins: true },
+  travertinePaint: { texture: 'paint', tint: 0xe2d2b8, roughness: 0.95, normalScale: 0.35 }, // ściana akcentowa w gabinecie
+  limeFront: { tiles: { w: 8, h: 300 }, color: 0xece4d8, grout: 0xd9d0c2, roughness: 0.7 }, // fronty i panele z pionowym frezem
+  greenTiles: { tiles: { w: 7.5, h: 30 }, color: ZIELEN, grout: 0x27392f, roughness: 0.15 }, // glazura 7,5 × 30 pionowo
+  clayTiles: { tiles: { w: 3, h: 120 }, color: 0xc9978a, grout: 0xb07f72, roughness: 0.35 }, // ryflowane płytki „glina”
+  boucle: { texture: 'fabric', color: 0xe6dccb, roughness: 1, normalScale: 1 }, // len i bouclé #E6DCCB
+  upholstery: { texture: 'fabric', color: 0xe6dccb, roughness: 1, normalScale: 1 },
+  linenWhite: { color: 0xece5d9, roughness: 0.95 },
+  duvet: { texture: 'fabric', color: 0xeae2d4, roughness: 1, normalScale: 0.4 },
+  throw: { texture: 'fabric', color: 0x6f7d5e, roughness: 1 }, // pled oliwkowy
+  cushionOat: { texture: 'fabric', color: 0xd8c8af, roughness: 1 },
+  cushionGreen: { texture: 'fabric', color: 0x4a5e45, roughness: 1 },
+  rug: { texture: 'carpet', tint: 0xe2d6c2, roughness: 1 }, // wełna, owsiany
+  brass: { color: 0xb8925a, roughness: 0.35, metalness: 1 }, // mosiądz szczotkowany
+  curtainLinen: { color: 0xe6dccb, roughness: 1, doubleSided: true },
+  curtainSheer: { color: 0xeee6d8, roughness: 1, opacity: 0.75, doubleSided: true },
+  shadeLinen: { color: 0xeee4d3, roughness: 0.9, emissive: 0xffd9b0, glow: 1.2, doubleSided: true },
 };
 
 const CEIL = 270;
 
 /**
- * Wyposażenie wg rzutu z planszy 03 (wariant po przebudowie). Współrzędne w cm jak w wymiary.md, `facing` = kierunek frontu.
- * Pola skrzydeł drzwi balkonowych (X 69,5–159,5 i 379,5–469,5, do Y ≈ 506) i drzwi wewnętrznych zostają wolne.
+ * Wyposażenie wg rzutu z moodboardu. Współrzędne w cm jak w materialy/wymiary.md, `facing` = kierunek frontu.
+ * Pola skrzydeł drzwi balkonowych (X 122–306, do Y ≈ 770) i drzwi wewnętrznych zostają wolne.
  */
 export const styl1Furniture: FurnitureItem[] = [
-  // ── Salon (plansza 04): lamele na całej nowej ściance, lewitująca szafka RTV, TV 55″ ──
-  { id: 'tvLamellas', type: 'lamellaPanel', x: 276.5, y: 400.75, facing: '+x', params: { w: 357.5, h: CEIL, slat: 4, gap: 2, felt: 'felt' } },
-  { id: 'wallWasher', type: 'block', x: 283, y: 400.75, z: CEIL - 1.2, facing: '+x', params: { w: 357.5, d: 4, h: 1, mat: 'led' } }, // profil LED w suficie muskający lamele
-  { id: 'tv', type: 'tv', x: 280.7, y: 425, z: 72, facing: '+x', params: { w: 122, h: 70 } }, // środek ekranu 107 cm
-  { id: 'tvCabinet', type: 'tvCabinet', x: 295.2, y: 425, facing: '+x', params: { w: 200, d: 35, h: 40, lift: 25, fronts: 'plain', doors: 3, ledUnder: true } }, // 54,5 od ściany balkonowej
-  { id: 'sofa', type: 'sofa', x: 494, y: 425, facing: '-x', params: { w: 160, d: 90, accentA: 'cushionLinen', accentB: 'cushionMocca' } },
-  { id: 'coffeeTable', type: 'coffeeTable', x: 400, y: 425, facing: '-x', params: { w: 60, h: 40, shape: 'round', mat: 'oakMocca' } },
-  { id: 'livingRug', type: 'rug', x: 385, y: 440, facing: '-x', params: { w: 230, d: 160 } },
-  { id: 'floorLamp', type: 'floorLampShade', x: 300, y: 538, facing: '+x', params: { cd: 22 } },
-  { id: 'trackSpot', type: 'trackSpot', x: 405, y: 395, facing: '+y', params: { len: 60, cd: 26 } },
+  // ── Kuchnia na prawej ścianie pokoju dziennego: słupek z lodówką, blat 275, góra orzech do sufitu, zielona glazura ──
+  { id: 'fridge', type: 'fridgeColumn', x: 297.7, y: 155.6, facing: '-x', params: { h: CEIL } },
+  { id: 'dishwasher', type: 'baseCabinet', x: 297.7, y: 215.35, facing: '-x', params: { w: 59.3, doors: 1, top: 'travertine' } },
+  { id: 'sinkCabinet', type: 'baseCabinet', x: 297.7, y: 285, facing: '-x', params: { w: 80, doors: 2, appliance: 'sink', top: 'travertine', tap: 'brass' } },
+  { id: 'drawerCabinet', type: 'baseCabinet', x: 297.7, y: 349.5, facing: '-x', params: { w: 49, doors: 1, top: 'travertine' } },
+  { id: 'hobCabinet', type: 'baseCabinet', x: 297.7, y: 404.5, facing: '-x', params: { w: 61, appliance: 'hob', top: 'travertine' } },
+  { id: 'narrowCabinet', type: 'baseCabinet', x: 297.7, y: 447.8, facing: '-x', params: { w: 25.6, doors: 1, top: 'travertine' } },
+  { id: 'wallCabinets', type: 'wallCabinet', x: 310.2, y: 323.15, z: 145, facing: '-x', params: { w: 274.9, h: 125, doors: 5, carcass: 'walnut' } },
+  { id: 'backsplash', type: 'wallPanel', x: 327.2, y: 323.15, z: 90, facing: '-x', params: { w: 274.9, h: 55, mat: 'greenTiles' } },
+  // Półwysep 150 × 60 z blatem z trawertynu i dwa hokery od strony salonu.
+  { id: 'peninsula', type: 'baseCabinet', x: 252.7, y: 490.65, facing: '-y', params: { w: 150, doors: 3, top: 'travertine' } },
+  { id: 'peninsulaTop', type: 'block', x: 252.7, y: 527, z: 86, facing: '-y', params: { w: 150, d: 13, h: 4, mat: 'travertine' } }, // nawis na kolana
+  { id: 'stoolA', type: 'stool', x: 222, y: 553, facing: '-y', params: { seat: 'boucle', legs: 'brass' } },
+  { id: 'stoolB', type: 'stool', x: 282, y: 553, facing: '-y', params: { seat: 'boucle', legs: 'brass' } },
+  { id: 'kitchenLight1', type: 'downlight', x: 245, y: 230, facing: '+y', params: { cd: 22 } },
+  { id: 'kitchenLight2', type: 'downlight', x: 245, y: 400, facing: '+y', params: { noLight: true } },
 
-  // ── Aneks i jadalnia (plansza 05): L wokół szachtu, dół dąb wędzony, góra w kolorze ściany do sufitu, spiek ──
-  { id: 'fridge', type: 'fridgeColumn', x: 388, y: 30, facing: '+y', params: { h: CEIL } },
-  { id: 'hobCabinet', type: 'baseCabinet', x: 448.5, y: 30, facing: '+y', params: { w: 61, appliance: 'hob', top: 'stoneGreige' } },
-  { id: 'hobWallCabinet', type: 'wallCabinet', x: 448.5, y: 17.5, z: 150, facing: '+y', params: { w: 61, h: 120, front: 'lenLacquer', carcass: 'lenLacquer' } }, // szafka z okapem
-  { id: 'hobSplash', type: 'wallPanel', x: 448.5, y: 0.5, z: 90, facing: '+y', params: { w: 61, h: 60, mat: 'stoneGreige' } },
-  { id: 'sinkCabinet', type: 'baseCabinet', x: 509, y: 100, facing: '-x', params: { w: 80, doors: 2, appliance: 'sink', top: 'stoneGreige' } },
-  { id: 'dishwasher', type: 'baseCabinet', x: 509, y: 162.5, facing: '-x', params: { w: 45, doors: 1, top: 'stoneGreige' } }, // zmywarka 45 w zabudowie
-  { id: 'wallCabinets', type: 'wallCabinet', x: 521.5, y: 122.5, z: 150, facing: '-x', params: { w: 125, h: 120, doors: 2, front: 'lenLacquer', carcass: 'lenLacquer' } },
-  { id: 'sinkSplash', type: 'wallPanel', x: 538.5, y: 122.5, z: 90, facing: '-x', params: { w: 125, h: 60, mat: 'stoneGreige' } },
-  // Stół 75 × 75 dosunięty do ściany prawej, 43 cm od blatu; 3 krzesła drewniane z plecionym siedziskiem.
-  { id: 'diningTable', type: 'diningTable', x: 501.5, y: 265.5, facing: '+y', params: { shape: 'square', w: 75, mat: 'oakMocca' } },
-  { id: 'chairN', type: 'diningChair', x: 501.5, y: 210, facing: '+y' },
-  { id: 'chairW', type: 'diningChair', x: 446, y: 265.5, facing: '+x' },
-  { id: 'chairS', type: 'diningChair', x: 501.5, y: 321, facing: '-y' },
-  { id: 'diningCluster', type: 'pendantCluster', x: 501.5, y: 265.5, facing: '+y', params: { bottom: 137, ceiling: CEIL, cd: 38 } }, // ~62 cm nad blatem
+  // ── Ściana TV: panele z orzecha na całą wysokość, otwarta podświetlana nisza, szafka RTV lewitująca 15 cm ──
+  { id: 'tvWall', type: 'wallPanel', x: 326.7, y: 705.3, facing: '-x', params: { w: 330.6, h: CEIL, t: 2, mat: 'walnut' } },
+  { id: 'nicheBack', type: 'wallPanel', x: 325.4, y: 572, z: 25, facing: '-x', params: { w: 60, h: 200, t: 0.6, mat: 'travertine' } },
+  { id: 'nicheSideN', type: 'block', x: 313.2, y: 541, z: 25, facing: '-x', params: { w: 2, d: 25, h: 200 } },
+  { id: 'nicheSideS', type: 'block', x: 313.2, y: 603, z: 25, facing: '-x', params: { w: 2, d: 25, h: 200 } },
+  ...[25, 75, 125, 175, 223].map((z, i): FurnitureItem => ({ id: `nicheShelf${i}`, type: 'block', x: 313.2, y: 572, z, facing: '-x', params: { w: 60, d: 25, h: 2 } })),
+  { id: 'nicheLed', type: 'block', x: 320, y: 572, z: 222.4, facing: '-x', params: { w: 58, d: 1, h: 0.6, mat: 'led' } },
+  { id: 'tv', type: 'tv', x: 322.5, y: 685, z: 69, facing: '-x', params: { w: 146, h: 82 } },
+  { id: 'tvCabinet', type: 'tvCabinet', x: 305.7, y: 685, facing: '-x', params: { w: 150, d: 40, h: 40, lift: 15, fronts: 'plain', doors: 3, ledUnder: true } },
 
-  // ── Hol (plansza 08): szafa z lamel przy ścianie wejściowej, lustro 60 × 180 na ściance od kuchni ──
-  { id: 'hallWardrobe', type: 'wardrobe', x: 200, y: 25, facing: '+y', params: { w: 80, d: 50, h: CEIL, doors: 2, fronts: 'lamella' } },
-  { id: 'hallMirror', type: 'mirrorRect', x: 348.8, y: 150, z: 20, facing: '-x', params: { w: 60, h: 180 } },
-  { id: 'hallLight1', type: 'downlight', x: 254, y: 85, facing: '+y', params: { noLight: true } },
-  { id: 'hallLight2', type: 'downlight', x: 254, y: 151, facing: '+y', params: { cd: 26 } },
-  { id: 'hallLight3', type: 'downlight', x: 212, y: 205, facing: '+y', params: { noLight: true } }, // nad wejściem do sypialni
+  // ── Salon: sofa bouclé pod lewą ścianą, stolik z orzecha, trawertynowy stolik boczny, juta, oliwka ──
+  { id: 'sofa', type: 'sofa', x: 47.5, y: 685, facing: '+x', params: { w: 240, d: 95, accentA: 'cushionOat', accentB: 'cushionGreen' } },
+  { id: 'coffeeTable', type: 'coffeeTable', x: 185, y: 685, facing: '+x', params: { w: 90, h: 36, shape: 'round', mat: 'walnut' } },
+  { id: 'sideTable', type: 'sideTable', x: 60, y: 545, facing: '+x', params: { r: 20, h: 50, mat: 'travertine' } },
+  { id: 'floorLamp', type: 'floorLampShade', x: 22, y: 540, facing: '+x', params: { h: 165, cd: 25, stem: 'brass' } },
+  { id: 'olive', type: 'model', x: 40, y: 838, facing: '+x', params: { file: 'potted_plant_04.glb', height: 150, w: 50, d: 50 } },
+  { id: 'livingRug', type: 'rug', x: 130, y: 685, facing: '+x', params: { w: 280, d: 200, mat: 'rugJute' } },
+  { id: 'curtainL', type: 'curtain', x: 39, y: 862, facing: '-y', params: { w: 70, mat: 'curtainLinen', ceiling: CEIL } },
+  { id: 'curtainR', type: 'curtain', x: 317, y: 862, facing: '-y', params: { w: 20, mat: 'curtainLinen', ceiling: CEIL } },
 
-  // ── Sypialnia (plansza 06): ściana za łóżkiem w kolorze Glina, panel-wezgłowie z półką, szafa do sufitu w kolorze ściany ──
-  { id: 'accentWall', type: 'wallPanel', x: 0.2, y: 405.75, facing: '+x', params: { w: 347.5, h: CEIL, t: 0.4, mat: 'glinaPaint' } },
-  { id: 'headboardPanel', type: 'headboardPanel', x: 1.4, y: 461.5, facing: '+x', params: { w: 202, h: 112, shelf: 12 } },
-  { id: 'bed', type: 'bed', x: 105.4, y: 431, facing: '+x', params: { w: 140, l: 200, headH: 95, frame: 'boucle', upholstered: true, pillow: 'cushionLinen' } },
-  { id: 'bedWardrobe', type: 'wardrobe', x: 30.4, y: 293.5, facing: '+x', params: { w: 120, d: 60, h: CEIL, doors: 2, front: 'glinaLacquer', handles: 'bar' } },
-  { id: 'nightstand', type: 'drawers', x: 22.4, y: 532.5, facing: '+x', params: { w: 40, d: 40, h: 48, n: 1 } },
-  { id: 'nightLamp', type: 'tableLamp', x: 22.4, y: 538, z: 48, facing: '+x' },
-  { id: 'sconceN', type: 'wallSpot', x: 2.6, y: 372, z: 125, facing: '+x', params: { mat: 'blackMetal' } },
-  { id: 'sconceS', type: 'wallSpot', x: 2.6, y: 491, z: 125, facing: '+x', params: { mat: 'blackMetal' } },
-  { id: 'shelfArtA', type: 'artFrame', x: 4, y: 418, z: 112, facing: '+x', params: { w: 34, h: 44 } },
-  { id: 'shelfArtB', type: 'artFrame', x: 4, y: 458, z: 112, facing: '+x', params: { w: 44, h: 54 } },
-  { id: 'bedPendant', type: 'pendantRattan', x: 132, y: 431, facing: '+y', params: { r: 26, drop: 70, ceiling: CEIL, cd: 40 } },
-  { id: 'bedRug', type: 'rug', x: 185, y: 435, facing: '+x', params: { w: 200, d: 130 } }, // w poprzek przejścia przy nogach łóżka
+  // ── Jadalnia: okrągły stół ø100 na nodze, trzy krzesła bouclé, czarna kopuła nad stołem, komoda z orzecha ──
+  { id: 'diningTable', type: 'diningTable', x: 115, y: 245, facing: '+y', params: { r: 50, mat: 'walnut', leg: 'walnut' } },
+  { id: 'chairN', type: 'diningChair', x: 115, y: 174, facing: '+y', params: { seat: 'boucle' } },
+  { id: 'chairW', type: 'diningChair', x: 40, y: 245, facing: '+x', params: { seat: 'boucle' } },
+  { id: 'chairS', type: 'diningChair', x: 115, y: 316, facing: '-y', params: { seat: 'boucle' } },
+  { id: 'diningDome', type: 'pendantDome', x: 115, y: 245, facing: '+y', params: { r: 24, bottom: 150, cd: 40 } },
+  { id: 'sideboard', type: 'drawers', x: 103.5, y: 20, facing: '+y', params: { w: 180, d: 40, h: 75, n: 2 } },
+  { id: 'sideboardArt', type: 'artFrame', x: 103.5, y: 1.5, z: 110, facing: '+y', params: { w: 90, h: 60 } },
 
-  // ── Zasłony: szyna pod sufitem, lniana firana + zasłona zaciemniająca (salon mocca, sypialnia taupe) ──
-  { id: 'curtainBedL', type: 'curtain', x: 36, y: 559, facing: '-y', params: { w: 56, mat: 'curtainTaupe', ceiling: CEIL } },
-  { id: 'sheerBed', type: 'curtain', x: 186, y: 571, facing: '-y', params: { w: 48, mat: 'curtainSheer', ceiling: CEIL, depth: 6, period: 9 } },
-  { id: 'curtainBedR', type: 'curtain', x: 236.5, y: 568, facing: '-y', params: { w: 51, mat: 'curtainTaupe', ceiling: CEIL } },
-  { id: 'curtainLivL', type: 'curtain', x: 300, y: 568, facing: '-y', params: { w: 44, mat: 'curtainMocca', ceiling: CEIL } },
-  { id: 'sheerLiv', type: 'curtain', x: 348, y: 571, facing: '-y', params: { w: 50, mat: 'curtainSheer', ceiling: CEIL, depth: 6, period: 9 } },
-  { id: 'curtainLivR', type: 'curtain', x: 503, y: 559, facing: '-y', params: { w: 60, mat: 'curtainMocca', ceiling: CEIL } },
+  // ── Hol: szafa z orzecha do sufitu na końcu, wisząca konsola z lustrem, półki na obrazy, profil LED ──
+  { id: 'hallWardrobe', type: 'wardrobe', x: 1006.9, y: 61.7, facing: '-x', params: { w: 123, d: 58, h: CEIL, doors: 2 } },
+  { id: 'hallConsole', type: 'block', x: 917, y: 12.5, z: 80, facing: '+y', params: { w: 105, d: 25, h: 12, r: 0.5 } },
+  { id: 'hallMirror', type: 'mirrorRect', x: 917, y: 1, z: 105, facing: '+y', params: { w: 60, h: 90 } },
+  { id: 'pictureShelfA', type: 'wallShelf', x: 423, y: 4, z: 150, facing: '+y', params: { w: 140, d: 8, mat: 'walnut' } },
+  { id: 'pictureShelfB', type: 'wallShelf', x: 639.5, y: 4, z: 150, facing: '+y', params: { w: 90, d: 8, mat: 'walnut' } },
+  { id: 'hallLed', type: 'block', x: 687, y: 12, z: CEIL - 1.2, facing: '+y', params: { w: 690, d: 4, h: 1, mat: 'led' } },
+  { id: 'hallLight1', type: 'downlight', x: 600, y: 62, facing: '+y', params: { cd: 22 } },
+  { id: 'hallLight2', type: 'downlight', x: 880, y: 62, facing: '+y', params: { cd: 22 } },
+  { id: 'hallRunner', type: 'rug', x: 640, y: 62, facing: '+y', params: { w: 420, d: 75, mat: 'rugJute' } },
 
-  // ── Łazienka (plansza 07): spiek do sufitu, gres drewnopodobny w prysznicu, wspólny blat nad pralką i szafką ──
-  { id: 'showerWoodL', type: 'wallPanel', x: 0.3, y: 182, facing: '+x', params: { w: 80, h: CEIL, t: 0.6, mat: 'woodTile' } },
-  { id: 'showerWoodB', type: 'wallPanel', x: 45, y: 221.7, facing: '-y', params: { w: 90, h: CEIL, t: 0.6, mat: 'woodTile' } },
-  { id: 'showerNiche', type: 'block', x: 1, y: 182, z: 110, facing: '+x', params: { w: 50, d: 1, h: 30, mat: 'felt' } },
-  { id: 'showerNicheLed', type: 'block', x: 1.6, y: 182, z: 139, facing: '+x', params: { w: 48, d: 0.6, h: 0.8, mat: 'ledAlways' } },
-  { id: 'shower', type: 'showerGlass', x: 35, y: 142, facing: '-y', params: { len: 70, h: 200, depth: 80, side: 'right' } },
-  { id: 'wcFrame', type: 'block', x: 10, y: 101, facing: '+x', params: { w: 82, d: 20, h: 110, mat: 'wallBathroom', collide: true } }, // zabudowa stelaża = półka
-  { id: 'wc', type: 'wcWallHung', x: 47, y: 101, facing: '+x', params: { mat: 'ceramicWhite', plateZ: 86 } },
-  { id: 'bathCounter', type: 'block', x: 90, y: 26, z: 86, facing: '+y', params: { w: 120, d: 52, h: 4, mat: 'stoneGreige' } },
-  { id: 'basin', type: 'block', x: 121, y: 27, z: 89.8, facing: '+y', params: { w: 40, d: 32, h: 0.4, mat: 'ceramicWhite', r: 0.1 } },
-  { id: 'bathTap', type: 'wallTap', x: 121, y: 0.5, z: 100, facing: '+y' },
-  { id: 'washer', type: 'washer', x: 61, y: 27.5, facing: '+y' },
-  { id: 'basinDrawer', type: 'drawers', x: 121, y: 25, z: 52, facing: '+y', params: { w: 58, d: 50, h: 34, n: 1 } },
-  { id: 'mirrorCabinet', type: 'mirrorCabinet', x: 90, y: 7.5, z: 112, facing: '+y', params: { w: 116, h: 75, d: 15 } },
-  { id: 'towelRail', type: 'towelRadiator', x: 146, y: 182, z: 40, facing: '-x', params: { w: 50, h: 100 } },
-  { id: 'bathLight1', type: 'downlight', x: 105, y: 106, facing: '+y', params: { cd: 28, alwaysOn: true } },
-  { id: 'bathLight2', type: 'downlight', x: 121, y: 186, facing: '+y', params: { alwaysOn: true, noLight: true } },
+  // ── Sypialnia: łóżko 160 × 200 przy prawej ścianie, boiserie z orzecha, pas trawertynu, ryflowane panele do sufitu ──
+  { id: 'boiserie', type: 'wallPanel', x: 1034.9, y: -178, facing: '-x', params: { w: 308, h: 105, t: 2, mat: 'walnut' } },
+  { id: 'bedBand', type: 'wallPanel', x: 1035, y: -178, z: 105, facing: '-x', params: { w: 308, h: 10, t: 1.8, mat: 'travertine' } },
+  { id: 'bedPanels', type: 'wallPanel', x: 1035.5, y: -178, z: 115, facing: '-x', params: { w: 308, h: CEIL - 115, t: 0.8, mat: 'limeFront' } },
+  { id: 'bedLed', type: 'block', x: 1033.5, y: -178, z: 104.4, facing: '-x', params: { w: 300, d: 1, h: 0.6, mat: 'led' } },
+  { id: 'bed', type: 'bed', x: 930.9, y: -182.9, facing: '-x', params: { w: 160, l: 200, headH: 110, frame: 'boucle', upholstered: true, pillow: 'cushionOat' } },
+  { id: 'nightstandN', type: 'drawers', x: 1013.9, y: -287.9, facing: '-x', params: { w: 40, d: 40, h: 50, n: 2 } },
+  { id: 'nightstandS', type: 'drawers', x: 1013.9, y: -77.9, facing: '-x', params: { w: 40, d: 40, h: 50, n: 2 } },
+  { id: 'sconceN', type: 'wallSpot', x: 1033.9, y: -287.9, z: 160, facing: '-x', params: { mat: 'brass' } },
+  { id: 'sconceS', type: 'wallSpot', x: 1033.9, y: -77.9, z: 160, facing: '-x', params: { mat: 'brass' } },
+  { id: 'bench', type: 'block', x: 803, y: -182.9, facing: '-x', params: { w: 100, d: 40, h: 45, r: 3, mat: 'boucle', collide: true } },
+  { id: 'bedRug', type: 'rug', x: 900, y: -182.9, facing: '-x', params: { w: 280, d: 230 } },
+  { id: 'bedWardrobe', type: 'wardrobe', x: 644.1, y: -124.1, facing: '+x', params: { w: 230, d: 60, h: CEIL, doors: 4, front: 'limeFront' } },
+  { id: 'armchair', type: 'sofa', x: 660, y: -290, facing: '+y', params: { w: 85, d: 80, seats: 1, fabric: 'boucle', accentA: 'cushionOat', accentB: 'boucle' } },
+  { id: 'armchairTable', type: 'sideTable', x: 728, y: -305, facing: '+y', params: { r: 20, h: 50, mat: 'travertine' } },
+  { id: 'bedLight', type: 'downlight', x: 830, y: -182, facing: '+y', params: { cd: 28 } },
+  { id: 'bedCurtainL', type: 'curtain', x: 636, y: -328, facing: '+y', params: { w: 40, mat: 'curtainLinen', ceiling: CEIL } },
+  { id: 'bedSheer', type: 'curtain', x: 727, y: -333, facing: '+y', params: { w: 210, mat: 'curtainSheer', ceiling: CEIL, depth: 6, period: 9 } },
+  { id: 'bedCurtainR', type: 'curtain', x: 855, y: -328, facing: '+y', params: { w: 50, mat: 'curtainLinen', ceiling: CEIL } },
 
-  // ── Balkon: stolik z dwoma krzesłami, donica, kinkiet zewnętrzny na filarze ──
-  { id: 'balconyTable', type: 'diningTable', x: 180, y: 680, facing: '+y', params: { r: 30, h: 72, mat: 'blackMatte' } },
-  { id: 'balconyChairW', type: 'diningChair', x: 128, y: 680, facing: '+x', params: { mat: 'blackMatte' } },
-  { id: 'balconyChairE', type: 'diningChair', x: 232, y: 680, facing: '-x', params: { mat: 'blackMatte' } },
-  { id: 'planter', type: 'block', x: 420, y: 738, facing: '-y', params: { w: 90, d: 30, h: 40, mat: 'walnut', collide: true } },
-  { id: 'planterPlantA', type: 'model', x: 395, y: 738, z: 40, facing: '-y', params: { file: 'potted_plant_04.glb', height: 26, w: 20, d: 20, collide: false } },
-  { id: 'planterPlantB', type: 'model', x: 420, y: 738, z: 40, facing: '-y', params: { file: 'potted_plant_04.glb', height: 30, w: 20, d: 20, collide: false, rotate: 70 } },
-  { id: 'planterPlantC', type: 'model', x: 445, y: 738, z: 40, facing: '-y', params: { file: 'potted_plant_04.glb', height: 24, w: 20, d: 20, collide: false, rotate: 140 } },
-  { id: 'balconySconce', type: 'wallSpot', x: 269.5, y: 619, z: 200, facing: '+y', params: { mat: 'blackMetal' } },
+  // ── Gabinet: biurko pod ścianą akcentową w kolorze trawertynu, półki z orzecha, sofa dzienna, szafa ──
+  { id: 'accentWall', type: 'wallPanel', x: 604.7, y: -178.2, facing: '-x', params: { w: 338, h: CEIL, t: 0.4, mat: 'travertinePaint' } },
+  { id: 'deskTop', type: 'block', x: 574.9, y: -201.2, z: 72, facing: '-x', params: { w: 140, d: 60, h: 3, collide: true } },
+  { id: 'deskDrawers', type: 'drawers', x: 577.4, y: -249.2, facing: '-x', params: { w: 40, d: 55, h: 72, n: 3 } },
+  { id: 'deskLeg', type: 'block', x: 575.9, y: -133.7, facing: '-x', params: { w: 3, d: 58, h: 72 } },
+  { id: 'deskChair', type: 'diningChair', x: 520, y: -201, facing: '+x', params: { seat: 'boucle' } },
+  { id: 'deskShelf1', type: 'wallShelf', x: 593.9, y: -201.2, z: 115, facing: '-x', params: { w: 120, d: 22, mat: 'walnut', decor: false } },
+  { id: 'deskShelf2', type: 'wallShelf', x: 593.9, y: -201.2, z: 150, facing: '-x', params: { w: 120, d: 22, mat: 'walnut' } },
+  { id: 'deskShelf3', type: 'wallShelf', x: 593.9, y: -201.2, z: 185, facing: '-x', params: { w: 120, d: 22, mat: 'walnut', decor: false } },
+  { id: 'deskLed', type: 'block', x: 590, y: -201.2, z: 114.4, facing: '-x', params: { w: 116, d: 1, h: 0.6, mat: 'led' } },
+  { id: 'daybed', type: 'bed', x: 397.5, y: -222, facing: '+y', params: { w: 90, l: 190, headH: 70, frame: 'boucle', upholstered: true, pillow: 'cushionGreen' } },
+  { id: 'officeWardrobe', type: 'wardrobe', x: 410.5, y: -41.7, facing: '-y', params: { w: 122, d: 65, h: CEIL, doors: 2 } },
+  { id: 'rollerBlind', type: 'wallPanel', x: 462, y: -344, z: 178, facing: '+y', params: { w: 120, h: 57, t: 1, mat: 'curtainLinen' } },
+  { id: 'officeLight', type: 'downlight', x: 477, y: -178, facing: '+y', params: { cd: 25 } },
+
+  // ── Łazienka: ryflowane płytki „glina” do 120 (nad wanną do sufitu), wanna z szybą, blat z trawertynu nad pralką ──
+  { id: 'clayL', type: 'wallPanel', x: 339.5, y: 182.2, facing: '+x', params: { w: 92.4, h: 120, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayShaftN', type: 'wallPanel', x: 360.7, y: 228.7, facing: '+y', params: { w: 43, h: 120, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayShaftE', type: 'wallPanel', x: 382.5, y: 262.25, facing: '+x', params: { w: 67.7, h: 120, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayBottom', type: 'wallPanel', x: 468.6, y: 295.8, facing: '-y', params: { w: 172.8, h: 120, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayTopL', type: 'wallPanel', x: 391.7, y: 136.3, facing: '+y', params: { w: 105, h: 120, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayTopR', type: 'wallPanel', x: 544.65, y: 136.3, facing: '+y', params: { w: 20.7, h: 120, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayTubE', type: 'wallPanel', x: 624.7, y: 216.05, facing: '-x', params: { w: 160.1, h: CEIL, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayTubS', type: 'wallPanel', x: 590, y: 295.8, facing: '-y', params: { w: 70, h: CEIL, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayTubN', type: 'wallPanel', x: 590, y: 136.3, facing: '+y', params: { w: 70, h: CEIL, t: 0.6, mat: 'clayTiles' } },
+  { id: 'bathtub', type: 'bathtub', x: 590, y: 216.05, facing: '-x', params: { w: 160, d: 70 } },
+  { id: 'tubScreen', type: 'showerGlass', x: 556, y: 176, facing: '-x', params: { len: 80, h: 200, depth: 70, side: 'left', head: 'brass' } },
+  { id: 'tubNiche', type: 'block', x: 624, y: 250, z: 100, facing: '-x', params: { w: 60, d: 1, h: 30, mat: 'travertine' } },
+  { id: 'tubNicheLed', type: 'block', x: 623.3, y: 250, z: 129, facing: '-x', params: { w: 58, d: 0.6, h: 0.8, mat: 'ledAlways' } },
+  { id: 'wcFrame', type: 'block', x: 349.2, y: 182, facing: '+x', params: { w: 82, d: 20, h: 110, mat: 'clayTiles', collide: true } },
+  { id: 'wc', type: 'wcWallHung', x: 386.2, y: 182, facing: '+x', params: { mat: 'ceramicWhite', plate: 'brass', plateZ: 86 } },
+  { id: 'towelRail', type: 'towelRadiator', x: 415, y: 141, z: 60, facing: '+y', params: { w: 50, h: 100, mat: 'brass' } },
+  { id: 'washer', type: 'washer', x: 415, y: 268.6, facing: '-y' },
+  { id: 'bathCounter', type: 'block', x: 461.2, y: 270.1, z: 86, facing: '-y', params: { w: 158, d: 52, h: 4, mat: 'travertine' } },
+  { id: 'basinCabinet', type: 'drawers', x: 495, y: 271.1, z: 52, facing: '-y', params: { w: 80, d: 50, h: 34, n: 1 } },
+  { id: 'basin', type: 'block', x: 495, y: 266, z: 90, facing: '-y', params: { w: 45, d: 35, h: 12, mat: 'ceramicWhite', r: 5 } },
+  { id: 'bathTap', type: 'wallTap', x: 495, y: 295.5, z: 112, facing: '-y', params: { mat: 'brass' } },
+  { id: 'bathMirror', type: 'mirrorRound', x: 495, y: 295.5, z: 118, facing: '-y', params: { r: 30 } },
+  { id: 'bathLight', type: 'downlight', x: 482, y: 200, facing: '+y', params: { cd: 26, alwaysOn: true } },
+
+  // ── WC: zielona glazura na całej ścianie z umywalką, szafka z orzecha, lustro z podświetleniem ──
+  { id: 'greenWall', type: 'wallPanel', x: 746.35, y: 295.8, facing: '-y', params: { w: 150.9, h: CEIL, t: 0.6, mat: 'greenTiles' } },
+  { id: 'wcVanity', type: 'vanity', x: 746, y: 275.5, facing: '-y', params: { w: 55, d: 40, top: 'travertine', basin: 'ceramicWhite', tap: 'brass' } },
+  { id: 'wcMirror', type: 'mirrorBacklit', x: 746, y: 295.3, z: 118, facing: '-y', params: { w: 42, h: 70 } },
+  { id: 'wcFrame2', type: 'block', x: 645.9, y: 184.8, facing: '+x', params: { w: 80, d: 20, h: 110, mat: 'wallBathroom', collide: true } },
+  { id: 'wc2', type: 'wcWallHung', x: 682.9, y: 184.8, facing: '+x', params: { mat: 'ceramicWhite', plate: 'brass', plateZ: 86 } },
+  { id: 'wcLight', type: 'downlight', x: 746, y: 200, facing: '+y', params: { cd: 22, alwaysOn: true } },
+
+  // ── Balkon: stolik z dwoma krzesłami ──
+  { id: 'balconyTable', type: 'diningTable', x: 220, y: 985, facing: '+y', params: { r: 30, h: 72, mat: 'blackMatte' } },
+  { id: 'balconyChairW', type: 'diningChair', x: 168, y: 985, facing: '+x', params: { mat: 'blackMatte' } },
+  { id: 'balconyChairE', type: 'diningChair', x: 272, y: 985, facing: '-x', params: { mat: 'blackMatte' } },
 ];

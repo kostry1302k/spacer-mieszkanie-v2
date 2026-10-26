@@ -146,7 +146,7 @@ async function loadMode(mode: ModeId): Promise<void> {
   rebuild();
   if (previous) library.release(previous, materials);
   show(1);
-  hud.setSubtitle(`${def.name} · M12, Skypoint 57`);
+  hud.setSubtitle(`${def.name} · ${apartment.name}`);
 }
 
 function rebuild(): void {

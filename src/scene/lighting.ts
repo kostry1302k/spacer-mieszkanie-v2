@@ -3,7 +3,7 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import type { Apartment } from '../data/types';
 import { SKY_HDRI, type TextureRes } from '../data/materials';
-import { wallAxis } from '../core/plan';
+import { pointInPolygon, wallAxis } from '../core/plan';
 import { m } from '../core/units';
 import type { Lamp } from '../furniture/place';
 import type { MaterialSet } from './materials';
@@ -62,7 +62,7 @@ export class Lighting {
     this.sun.target.position.copy(center);
     this.sun.castShadow = true;
     this.sun.shadow.mapSize.setScalar(shadowMapSize);
-    Object.assign(this.sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
+    Object.assign(this.sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 40 });
     this.sun.shadow.bias = -0.0005;
     this.sun.shadow.normalBias = 0.02;
     this.group.add(this.sun, this.sun.target);
@@ -70,13 +70,19 @@ export class Lighting {
     // Światło nieba w każdym przeszkleniu ściany zewnętrznej, skierowane do wnętrza.
     for (const o of ap.openings) {
       const wall = ap.walls.find((w) => w.id === o.wallId);
-      if (!wall || wall.kind !== 'exterior' || wallAxis(wall) !== 'x') continue;
-      const width = m(o.to - o.from);
-      const height = m(o.head - o.sill);
-      const light = new THREE.RectAreaLight(0xffffff, 1, width, height);
-      const inside = wall.y0; // lico wewnętrzne
-      light.position.set(m((o.from + o.to) / 2), m((o.sill + o.head) / 2), m(inside) - 0.01);
-      light.lookAt(light.position.x, light.position.y, light.position.z - 1);
+      if (!wall || wall.kind !== 'exterior') continue;
+      const alongX = wallAxis(wall) === 'x';
+      const mid = (o.from + o.to) / 2;
+      // Lico wewnętrzne = to, za którym (5 cm dalej) leży pokój.
+      const [lo, hi] = alongX ? [wall.y0, wall.y1] : [wall.x0, wall.x1];
+      const inRoom = (n: number) => ap.rooms.some((r) => !r.outdoor && pointInPolygon(alongX ? mid : n, alongX ? n : mid, r.polygon));
+      const face = inRoom(hi + 5) ? hi : lo;
+      const dir = face === hi ? 1 : -1;
+      const light = new THREE.RectAreaLight(0xffffff, 1, m(o.to - o.from), m(o.head - o.sill));
+      const y = m((o.sill + o.head) / 2);
+      if (alongX) light.position.set(m(mid), y, m(face) + dir * 0.01);
+      else light.position.set(m(face) + dir * 0.01, y, m(mid));
+      light.lookAt(light.position.clone().add(alongX ? new THREE.Vector3(0, 0, dir) : new THREE.Vector3(dir, 0, 0)));
       this.windows.push(light);
       this.group.add(light);
     }

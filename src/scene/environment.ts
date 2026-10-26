@@ -15,7 +15,7 @@ const GROUND_SIZE = 80; // m
 export function buildEnvironment(ap: Apartment, mats: MaterialSet): THREE.Group {
   const group = new THREE.Group();
   group.name = 'environment';
-  const facadeWall = ap.walls.find((w) => w.kind === 'exterior')!;
+  const facadeWall = ap.walls.find((w) => w.kind === 'exterior' && Math.abs(w.y1 - ap.balcony.slab.y0) < 1)!;
   const { storeyHeight, floor } = ap.building;
   const groundZ = -storeyHeight * floor;
   const topZ = ap.height + storeyHeight * STOREYS_ABOVE;

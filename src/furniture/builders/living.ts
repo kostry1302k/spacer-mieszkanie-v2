@@ -19,7 +19,7 @@ export const sofa: Builder = (p) => {
   parts.push(span(fabric, -w / 2, -w / 2 + arm, legH, 62, back, d / 2, 6)); // podłokietniki
   parts.push(span(fabric, w / 2 - arm, w / 2, legH, 62, back, d / 2, 6));
   parts.push(span(fabric, -w / 2 + arm, w / 2 - arm, legH + 10, 85, back, back + 18, 6)); // oparcie
-  const seats = Math.max(2, Math.round((w - 2 * arm) / 70));
+  const seats = num(p, 'seats', Math.max(2, Math.round((w - 2 * arm) / 70)));
   const seatW = (w - 2 * arm) / seats;
   for (let i = 0; i < seats; i++) {
     const x0 = -w / 2 + arm + i * seatW;
@@ -120,7 +120,7 @@ export const diningTable: Builder = (p) => {
     return { parts, size: { w, d: w, h }, collide: true };
   }
   return {
-    parts: [cylinder(top, r, r, 3, 0, h - 3, 0, 56), cylinder('blackMatte', 5, 5, h - 3, 0, 0, 0), cylinder('blackMatte', 24, 26, 2, 0, 0, 0, 40)],
+    parts: [cylinder(top, r, r, 3, 0, h - 3, 0, 56), cylinder(str(p, 'leg', 'blackMatte'), 5, 5, h - 3, 0, 0, 0), cylinder(str(p, 'leg', 'blackMatte'), 24, 26, 2, 0, 0, 0, 40)],
     size: { w: 2 * r, d: 2 * r, h },
     collide: true,
   };
@@ -300,4 +300,13 @@ export const block: Builder = (p) => {
   const d = num(p, 'd', 50);
   const h = num(p, 'h', 50);
   return { parts: [span(str(p, 'mat', 'walnut'), -w / 2, w / 2, 0, h, -d / 2, d / 2, num(p, 'r', 0))], size: { w, d, h }, collide: p.collide === true };
+};
+
+/** Hoker barowy: okrągłe siedzisko, cztery smukłe nogi z podnóżkiem. */
+export const stool: Builder = (p) => {
+  const h = num(p, 'h', 65);
+  const legs = str(p, 'legs', 'blackMetal');
+  const parts: Part[] = [cylinder(str(p, 'seat', 'upholstery'), 18, 17, 6, 0, h - 6, 0, 32), cylinder(legs, 15, 15, 1.2, 0, 25, 0, 24)];
+  for (const [x, z] of [[-11, -11], [11, -11], [-11, 11], [11, 11]]) parts.push(cylinder(legs, 1, 1.2, h - 6, x, 0, z, 8));
+  return { parts, size: { w: 38, d: 38, h }, collide: true };
 };

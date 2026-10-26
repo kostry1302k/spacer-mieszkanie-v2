@@ -40,6 +40,8 @@ export interface TexturedSpec {
   texture: TextureKey;
   /** Mnożnik koloru tekstury (1 = bez zmian). */
   tint?: number;
+  /** Jednolity kolor zamiast mapy koloru – tekstura daje tylko fakturę (normal + roughness). */
+  color?: number;
   roughness?: number;
   normalScale?: number;
   doubleSided?: boolean;
@@ -53,6 +55,8 @@ export interface TilesSpec {
   roughness: number;
   /** Delikatne przeżylenie (jasne smugi). */
   veins?: boolean;
+  /** Drobne kruszywo jak w lastryko. */
+  speckle?: boolean;
 }
 
 export type MaterialSpec = FlatSpec | TexturedSpec | TilesSpec;
@@ -86,12 +90,12 @@ function createTextured(spec: TexturedSpec, opts: MaterialOptions): THREE.MeshSt
   const base = `${import.meta.env.BASE_URL}assets/textures/${set.id}/${res}`;
   const normalScale = spec.normalScale ?? 1;
   return new THREE.MeshStandardMaterial({
-    map: loadTexture(`${base}/color.jpg`, true, set.size, opts),
+    map: spec.color === undefined ? loadTexture(`${base}/color.jpg`, true, set.size, opts) : null,
     normalMap: loadTexture(`${base}/normal.jpg`, false, set.size, opts),
     normalScale: new THREE.Vector2(normalScale, normalScale),
     roughnessMap: loadTexture(`${base}/roughness.jpg`, false, set.size, opts),
     roughness: spec.roughness ?? 1,
-    color: spec.tint ?? 0xffffff,
+    color: spec.color ?? spec.tint ?? 0xffffff,
     side: spec.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
   });
 }
@@ -151,6 +155,13 @@ function createTiles(spec: TilesSpec, opts: MaterialOptions): THREE.MeshStandard
         ctx.lineTo(x, y);
       }
       ctx.stroke();
+    }
+  }
+  if (spec.speckle) {
+    for (let i = 0; i < 2500; i++) {
+      const v = Math.floor(rand() * 200) + 30;
+      ctx.fillStyle = `rgba(${v + 20},${v},${v - 20},0.55)`;
+      ctx.fillRect(rand() * canvas.width, rand() * canvas.height, 1 + rand() * 4, 1 + rand() * 4);
     }
   }
   // Fugi 2 mm między dwiema kolumnami płytek i na krawędziach (tekstura się powtarza).

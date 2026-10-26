@@ -4,9 +4,8 @@ import type { CeilingFixture } from '../../geometry/fixtures';
 import { FURNITURE_BASE } from './common';
 import { rawMaterials } from './raw';
 import { styl1Furniture, styl1FurnitureMaterials, styl1Materials } from './styl1';
-import { styl2Furniture, styl2FurnitureMaterials, styl2Materials } from './styl2';
 
-export type ModeId = 'raw' | 'styl1' | 'styl2';
+export type ModeId = 'raw' | 'styl1';
 
 export interface ModeDefinition {
   id: ModeId;
@@ -29,29 +28,19 @@ export const MODES: Record<ModeId, ModeDefinition> = {
     name: 'Stan surowy',
     label: 'Surowy',
     materials: rawMaterials,
-    variant: null,
+    variant: 'developer', // M21: bez przeróbek ścian
     interiorDoors: false,
     ceilingFixture: 'bulb',
     furniture: [],
   },
   styl1: {
     id: 'styl1',
-    name: 'Styl 1 – ciemny orzech',
-    label: 'Styl 1',
+    name: 'Orzech, trawertyn i zieleń',
+    label: 'Wykończenie',
     materials: { ...FURNITURE_BASE, ...styl1FurnitureMaterials, ...styl1Materials },
-    variant: 'rebuild',
+    variant: 'developer',
     interiorDoors: true,
     ceilingFixture: 'none',
     furniture: styl1Furniture,
-  },
-  styl2: {
-    id: 'styl2',
-    name: 'Styl 2 – jasny minimalizm',
-    label: 'Styl 2',
-    materials: { ...FURNITURE_BASE, ...styl2FurnitureMaterials, ...styl2Materials },
-    variant: 'rebuild',
-    interiorDoors: true,
-    ceilingFixture: 'none',
-    furniture: styl2Furniture,
   },
 };

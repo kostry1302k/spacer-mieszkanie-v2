@@ -38,7 +38,7 @@ export interface Opening {
   head: number;
 }
 
-export type DoorKind = 'entrance' | 'interior' | 'balcony';
+export type DoorKind = 'entrance' | 'interior' | 'balcony' | 'window';
 
 export interface Door {
   id: string;
@@ -128,6 +128,8 @@ export interface Building {
 export interface Apartment {
   name: string;
   height: number;
+  /** Powierzchnia użytkowa z karty lokalu (m², bez balkonu) – kontrola w check-data. */
+  usableArea: number;
   building: Building;
   /** Wnętrze w świetle tynku. */
   interior: { x0: number; y0: number; x1: number; y1: number };

@@ -17,13 +17,13 @@ export class WalkHud {
   private readonly overlay = div('overlay');
   private readonly fade = div('fade');
   private readonly loading = div('loading-pill');
-  private subtitle = 'Stan surowy · M12, Skypoint 57';
+  private subtitle = '';
 
   constructor(container: HTMLElement, private readonly touch: boolean, onStart: () => void) {
     this.overlay.innerHTML = `
       <div class="overlay-card">
         <h1>Spacer po mieszkaniu</h1>
-        <p class="overlay-status">Stan surowy · M12, Skypoint 57</p>
+        <p class="overlay-status"></p>
         <ul class="keys">${touch ? TOUCH_KEYS : DESKTOP_KEYS}</ul>
         <button type="button" class="primary">${touch ? 'Dotknij, aby zacząć' : 'Kliknij, aby zacząć'}</button>
       </div>`;

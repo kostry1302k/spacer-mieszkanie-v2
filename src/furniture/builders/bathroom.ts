@@ -143,3 +143,23 @@ export const wallTap: Builder = (p) => ({
   size: { w: 8, d: 18, h: 6 },
   collide: false,
 });
+
+/** Wanna prostokątna wolnostojąca przy ścianie: cztery ścianki z rantem i dno. Front = dłuższy bok od pokoju. */
+export const bathtub: Builder = (p) => {
+  const w = num(p, 'w', 160);
+  const d = num(p, 'd', 70);
+  const h = num(p, 'h', 55);
+  const mat = str(p, 'mat', 'ceramicWhite');
+  const t = 6;
+  return {
+    parts: [
+      span(mat, -w / 2, w / 2, 0, 12, -d / 2, d / 2, 2),
+      span(mat, -w / 2, w / 2, 0, h, d / 2 - t, d / 2, 2),
+      span(mat, -w / 2, w / 2, 0, h, -d / 2, -d / 2 + t, 2),
+      span(mat, -w / 2, -w / 2 + t, 0, h, -d / 2, d / 2, 2),
+      span(mat, w / 2 - t, w / 2, 0, h, -d / 2, d / 2, 2),
+    ],
+    size: { w, d, h },
+    collide: true,
+  };
+};

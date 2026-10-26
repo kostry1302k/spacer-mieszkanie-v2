@@ -68,7 +68,8 @@ for (const r of ap.rooms) {
   const area = polygonArea(r.polygon);
   const diff = area - r.expectedArea;
   const line = `${r.name.padEnd(26)} ${area.toFixed(3)} m² (wymiary.md: ${r.expectedArea.toFixed(2)}, różnica ${diff >= 0 ? '+' : ''}${diff.toFixed(3)})`;
-  if (Math.abs(diff) > AREA_TOLERANCE) fail(`metraż: ${line}`);
+  // Wymiary z pomiaru rysunku mają ok. 1% dokładności – tolerancja względna, min. 0,05 m².
+  if (Math.abs(diff) > Math.max(AREA_TOLERANCE, r.expectedArea * 0.015)) fail(`metraż: ${line}`);
   else console.log(`  ok  ${line}`);
 
   const { x, y } = r.spawn;
@@ -77,10 +78,10 @@ for (const r of ap.rooms) {
   if (!inside) fail(`pokój ${r.id}: punkt startowy poza obrysem`);
 }
 
-// Suma lokalu (bez balkonu) w wariancie deweloperskim: 30,12 m².
+// Suma lokalu (bez balkonu) w wariancie deweloperskim.
 const total = ap.rooms.filter((r) => !r.outdoor && inVariant(r, 'developer')).reduce((s, r) => s + polygonArea(r.polygon), 0);
-console.log(`  suma (stan deweloperski): ${total.toFixed(2)} m² (rzut: 30,12)`);
-if (Math.abs(total - 30.12) > AREA_TOLERANCE * 2) fail(`suma powierzchni ${total.toFixed(2)} ≠ 30,12`);
+console.log(`  suma (stan deweloperski): ${total.toFixed(2)} m² (karta: ${ap.usableArea})`);
+if (Math.abs(total - ap.usableArea) > ap.usableArea * 0.01) fail(`suma powierzchni ${total.toFixed(2)} ≠ ${ap.usableArea}`);
 
 const { x0, x1, y0, y1 } = ap.interior;
 for (const f of ap.fixtures) {

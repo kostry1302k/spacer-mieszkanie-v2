@@ -20,6 +20,7 @@ const STYLES: Record<DoorKind, DoorStyle> = {
   entrance: { frameWidth: 6, frameDepth: null, leafThickness: 6, frame: 'frame', leaf: 'doorEntrance', glazed: false },
   interior: { frameWidth: 5, frameDepth: null, leafThickness: 4, frame: 'doorInterior', leaf: 'doorInterior', glazed: false },
   balcony: { frameWidth: 6, frameDepth: 7, leafThickness: 7, frame: 'frame', leaf: 'frame', glazed: true },
+  window: { frameWidth: 6, frameDepth: 7, leafThickness: 7, frame: 'frame', leaf: 'frame', glazed: true },
 };
 
 const SASH = 7; // szerokość profilu skrzydła drzwi balkonowych
@@ -85,12 +86,13 @@ export function buildOpenings(ap: Apartment, opts: OpeningsOptions, mats: Materi
     const box = (a0: number, a1: number, n: [number, number], z0: number, z1: number) => alongWall(wall, a0, a1, n[0], n[1], z0, z1);
 
     // Ościeżnica: dwa słupki, nadproże i (dla balkonu) próg.
-    addStatic(style.frame, box(opening.from, opening.from + F, frameN, 0, opening.head));
-    addStatic(style.frame, box(opening.to - F, opening.to, frameN, 0, opening.head));
+    const sill = opening.sill;
+    addStatic(style.frame, box(opening.from, opening.from + F, frameN, sill, opening.head));
+    addStatic(style.frame, box(opening.to - F, opening.to, frameN, sill, opening.head));
     addStatic(style.frame, box(opening.from + F, opening.to - F, frameN, opening.head - F, opening.head));
-    if (style.glazed) addStatic(style.frame, box(opening.from + F, opening.to - F, frameN, 0, 3));
+    if (style.glazed) addStatic(style.frame, box(opening.from + F, opening.to - F, frameN, sill, sill + 3));
 
-    const zBottom = style.glazed ? 3 : 1;
+    const zBottom = sill + (style.glazed ? 3 : 1);
     const zTop = opening.head - F;
     const leafA0 = Math.max(door.leafFrom, opening.from + F) + GAP;
     const leafA1 = Math.min(door.leafTo, opening.to - F) - GAP;
