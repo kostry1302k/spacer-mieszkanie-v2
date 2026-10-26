@@ -107,17 +107,18 @@ export const tv: Builder = (p) => {
   };
 };
 
-/** Stół: okrągły na jednej nodze albo kwadratowy (`shape: 'square'`, bok `w`) na czterech nogach. */
+/** Stół: okrągły na jednej nodze albo prostokątny (`shape: 'square'`, `w` × `d`, domyślnie kwadrat) na czterech nogach. */
 export const diningTable: Builder = (p) => {
   const r = num(p, 'r', 45);
   const h = num(p, 'h', 75);
   const top = str(p, 'mat', 'walnut');
   if (p.shape === 'square') {
     const w = num(p, 'w', 75);
+    const d = num(p, 'd', w);
     const legs = str(p, 'legs', top);
-    const parts: Part[] = [span(top, -w / 2, w / 2, h - 3, h, -w / 2, w / 2, 0.8)];
-    for (const x of [-w / 2 + 4, w / 2 - 4]) for (const z of [-w / 2 + 4, w / 2 - 4]) parts.push(span(legs, x - 2, x + 2, 0, h - 3, z - 2, z + 2, 0.4));
-    return { parts, size: { w, d: w, h }, collide: true };
+    const parts: Part[] = [span(top, -w / 2, w / 2, h - 3, h, -d / 2, d / 2, 0.8)];
+    for (const x of [-w / 2 + 4, w / 2 - 4]) for (const z of [-d / 2 + 4, d / 2 - 4]) parts.push(span(legs, x - 2, x + 2, 0, h - 3, z - 2, z + 2, 0.4));
+    return { parts, size: { w, d, h }, collide: true };
   }
   return {
     parts: [cylinder(top, r, r, 3, 0, h - 3, 0, 56), cylinder(str(p, 'leg', 'blackMatte'), 5, 5, h - 3, 0, 0, 0), cylinder(str(p, 'leg', 'blackMatte'), 24, 26, 2, 0, 0, 0, 40)],

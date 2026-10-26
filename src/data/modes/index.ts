@@ -4,8 +4,9 @@ import type { CeilingFixture } from '../../geometry/fixtures';
 import { FURNITURE_BASE } from './common';
 import { rawMaterials } from './raw';
 import { styl1Furniture, styl1FurnitureMaterials, styl1Materials } from './styl1';
+import { styl2Furniture, styl2FurnitureMaterials, styl2Materials } from './styl2';
 
-export type ModeId = 'raw' | 'styl1';
+export type ModeId = 'raw' | 'styl1' | 'styl2';
 
 export interface ModeDefinition {
   id: ModeId;
@@ -36,11 +37,21 @@ export const MODES: Record<ModeId, ModeDefinition> = {
   styl1: {
     id: 'styl1',
     name: 'Orzech, trawertyn i zieleń',
-    label: 'Wykończenie',
+    label: 'Styl 1',
     materials: { ...FURNITURE_BASE, ...styl1FurnitureMaterials, ...styl1Materials },
     variant: 'developer',
     interiorDoors: true,
     ceilingFixture: 'none',
     furniture: styl1Furniture,
+  },
+  styl2: {
+    id: 'styl2',
+    name: 'Orzech, trawertyn i zieleń · wariant 2',
+    label: 'Styl 2',
+    materials: { ...FURNITURE_BASE, ...styl2FurnitureMaterials, ...styl2Materials },
+    variant: 'developer',
+    interiorDoors: true,
+    ceilingFixture: 'none',
+    furniture: styl2Furniture,
   },
 };

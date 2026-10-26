@@ -70,6 +70,8 @@ export const styl1Furniture: FurnitureItem[] = [
   { id: 'backsplash', type: 'wallPanel', x: 327.2, y: 323.15, z: 90, facing: '-x', params: { w: 274.9, h: 55, mat: 'greenTiles' } },
   // Półwysep 150 × 60 z blatem z trawertynu i dwa hokery od strony salonu.
   { id: 'peninsula', type: 'baseCabinet', x: 252.7, y: 490.65, facing: '-y', params: { w: 150, doors: 3, top: 'travertine' } },
+  { id: 'peninsulaBack', type: 'wallPanel', x: 252.7, y: 521.4, facing: '+y', params: { w: 150, h: 86, t: 1.5, mat: 'walnut' } }, // okładzina od strony salonu
+  { id: 'peninsulaSide', type: 'wallPanel', x: 176.9, y: 491.4, facing: '-x', params: { w: 61.5, h: 86, t: 1.5, mat: 'walnut' } },
   { id: 'peninsulaTop', type: 'block', x: 252.7, y: 527, z: 86, facing: '-y', params: { w: 150, d: 13, h: 4, mat: 'travertine' } }, // nawis na kolana
   { id: 'stoolA', type: 'stool', x: 222, y: 553, facing: '-y', params: { seat: 'boucle', legs: 'brass' } },
   { id: 'stoolB', type: 'stool', x: 282, y: 553, facing: '-y', params: { seat: 'boucle', legs: 'brass' } },

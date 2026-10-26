@@ -57,6 +57,8 @@ export interface TilesSpec {
   veins?: boolean;
   /** Drobne kruszywo jak w lastryko. */
   speckle?: boolean;
+  /** Kolor kostki w narożnikach płytek (ośmiokąt z kostką). */
+  dots?: number;
 }
 
 export type MaterialSpec = FlatSpec | TexturedSpec | TilesSpec;
@@ -169,6 +171,19 @@ function createTiles(spec: TilesSpec, opts: MaterialOptions): THREE.MeshStandard
   ctx.fillStyle = `#${new THREE.Color(spec.grout).getHexString()}`;
   for (const x of [0, Math.round(spec.tiles.w * px)]) ctx.fillRect(x, 0, grout, canvas.height);
   ctx.fillRect(0, 0, canvas.width, grout);
+  if (spec.dots !== undefined) {
+    ctx.fillStyle = `#${new THREE.Color(spec.dots).getHexString()}`;
+    const r = 0.21 * spec.tiles.w * px;
+    for (const x of [0, spec.tiles.w * px, canvas.width])
+      for (const y of [0, canvas.height]) {
+        ctx.beginPath();
+        ctx.moveTo(x - r, y);
+        ctx.lineTo(x, y - r);
+        ctx.lineTo(x + r, y);
+        ctx.lineTo(x, y + r);
+        ctx.fill();
+      }
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;

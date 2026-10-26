@@ -1,13 +1,13 @@
 # Wirtualny spacer – Mieszkanie M21, Osiedle Sfera II
 
 Statyczna strona z wirtualnym spacerem po mieszkaniu 67,24 m² (ul. Oleńki 14, kl. A, 1. piętro z 3): hol, pokój dzienny z aneksem,
-gabinet (pokój 4), sypialnia (pokój 5), łazienka, WC, balkon 5,15 m². Widok z perspektywy człowieka, dwa tryby: stan surowy
-i wykończenie „Orzech, trawertyn i zieleń”. Silnik skopiowany ze spaceru M12 (repo `spacer-mieszkanie-v1`); PLAN.md opisuje etapy M12.
+gabinet (pokój 4), sypialnia (pokój 5), łazienka, WC, balkon 5,15 m². Widok z perspektywy człowieka, trzy tryby: stan surowy
+i dwa warianty wykończenia „Orzech, trawertyn i zieleń” (styl 1, styl 2). Silnik skopiowany ze spaceru M12 (repo `spacer-mieszkanie-v1`); PLAN.md opisuje etapy M12.
 
 ## Źródła prawdy
 1. [materialy/wymiary.md](materialy/wymiary.md) – **jedyne źródło wymiarów**. Wymiary policzone wyłącznie z pól pomieszczeń z karty geodety (opis metody w pliku).
 2. `materialy/rzuty/karta-1.21.pdf` (karta lokalu, pola) i `rzut-1.21.png` (rzut sprzedażowy 1:100) – tylko odniesienie.
-3. `materialy/style/styl-1/Projekty wnętrz — M12 Skypoint · M21 Sfera II.pdf` – moodboard stylu (7 plansz, wszystkie M21) + zdjęcia inspiracji.
+3. `materialy/style/styl-1/` i `styl-2/` – moodboardy (PDF, 7 plansz, ta sama nazwa pliku, inna treść) + zdjęcia inspiracji.
 
 `materialy/` jest tylko do odczytu (poza wymiary.md, zmienianym wyłącznie po decyzji właściciela) i – poza wymiary.md – nie trafia do repozytorium (repo publiczne).
 
@@ -57,7 +57,8 @@ src/
       index.ts             – definicje trybów (nazwa, materiały, wymuszony wariant, drzwi wewnętrzne, oprawy sufitowe)
       common.ts            – powierzchnie wspólne dla trybów (stolarka, elewacja, grzejniki, osprzęt)
       raw.ts               – tryb surowy: wylewka, szary tynk, gołe żarówki
-      styl1.ts             – wykończenie: materiały, paleta mebli i lista mebli (typ, środek obrysu w cm, kierunek frontu, parametry)
+      styl1.ts             – styl 1: materiały, paleta mebli i lista mebli (typ, środek obrysu w cm, kierunek frontu, parametry)
+      styl2.ts             – styl 2: dziedziczy styl 1, podmienia wybrane meble (zbiór REPLACED) i dodaje własne
     materials.ts           – katalog tekstur PBR (id, rzeczywisty rozmiar kafla w m, dostępne rozdzielczości) i HDRI nieba
   geometry/
     apartmentModel.ts      – składa całą bryłę mieszkania z danych dla wariantu i zestawu materiałów
@@ -129,6 +130,15 @@ npm run assets       # pobranie i konwersja zasobów CC0 (tylko macOS – używa
 - **Hol:** szafa z orzecha do sufitu na końcu, wisząca konsola z lustrem, półki na obrazy, profil LED, chodnik z juty.
 - **Łazienka:** wanna 160 × 70 z szybą, glina do 120 (nad wanną do sufitu), blat z trawertynu nad pralką, umywalka nablatowa, mosiężna armatura; **WC:** zielona glazura na ścianie z umywalką.
 - **Odstępstwa:** szafka RTV 150 zamiast 220 (skrzydło prawych drzwi balkonowych parkuje przy ścianie TV od Y ≈ 770), lustro w holu prostokątne zamiast łukowego, lampa łukowa zastąpiona stojącą z abażurem, „oliwka” to model rośliny CC0.
+
+## Styl 2 – „Orzech, trawertyn i zieleń”, wariant 2
+**Źródło: `materialy/style/styl-2/…pdf`.** Dane w `src/data/modes/styl2.ts`; paleta, kuchnia, hol, ściana za łóżkiem, łazienka i WC jak w stylu 1.
+- **Podłoga:** gres ośmiokątny 20 × 20 w odcieniu trawertynu z zieloną kostką w holu i pasie kuchni (X 179–327,7, Y 0–460,6), mosiężna listwa na granicy z jodełką (`TilesSpec.dots`).
+- **Pokój dzienny:** stół orzech 180 × 90, tapicerowana ławka pod lewą ścianą + 3 krzesła bouclé, dwie czarne kopuły; narożnik bouclé 270 z szezlongiem od strony kuchni; ściana TV: tapeta z trawy morskiej + panel z orzecha 180 na całą wysokość z TV; jasna kopuła nad półwyspem.
+- **Sypialnia:** szafa przesuwna 292 × 65 naprzeciw łóżka (Y −315…−23), środkowe drzwi odsunięte, za nimi TV 43″.
+- **Gabinet:** grafitowa ściana, biurko 230 × 60, panel orzech z LED, podświetlane witryny, grafitowe szafki do sufitu, kontener, pegboard, ciemny dywan; leżanka 90 × 200 z drewnianą ramą.
+- **Łazienka:** wanna w obudowie z ryflowanych płytek.
+- **Odstępstwa:** szafka RTV 160 zamiast 220 (skrzydło prawych drzwi balkonowych); szezlong 60 cm i narożnik przesunięty 16 cm w stronę balkonu (inaczej przejście przy półwyspie < 44 cm); szafa w sypialni odsunięta od okna (32 cm), więc TV jest 14 cm od osi łóżka.
 
 ### Stan surowy
 Wylewka, szary tynk, gołe żarówki na wypustach, grzejniki płytowe, stolarka antracyt, brak drzwi wewnętrznych i mebli.
