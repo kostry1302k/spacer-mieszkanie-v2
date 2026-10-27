@@ -11,7 +11,8 @@ import { MockupViews } from './scene/views';
 import { Player } from './controls/player';
 import { DesktopControls } from './controls/desktop';
 import { TouchControls } from './controls/touch';
-import { staticColliders, type Rect } from './controls/collisions';
+import { segmentHitsRect, staticColliders, type Rect } from './controls/collisions';
+import { wallBoxes } from './geometry/walls';
 import { DoorController } from './interaction/doors';
 import { placeFurniture, type PlacedFurniture } from './furniture/place';
 import { ModelCache } from './furniture/gltf';
@@ -168,7 +169,8 @@ function rebuild(): void {
   doors.setLeaves(model.leaves);
   colliders = staticColliders(apartment, variant);
   if (def.furniture.length) {
-    furniture = placeFurniture(def.furniture, materials, models);
+    const walls = wallBoxes(apartment, variant).filter((b) => b.z0 < 100);
+    furniture = placeFurniture(def.furniture, materials, models, (ax, ay, bx, by) => !walls.some((w) => segmentHitsRect(ax, ay, bx, by, w)));
     scene.add(furniture.group);
     colliders.push(...furniture.colliders);
   }
@@ -237,7 +239,20 @@ if (isDebug) {
   };
   const memory = () => ({ ...renderer.info.memory, textures: renderer.info.memory.textures, library: library.textureCount });
   const stats = () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, lights: scene.children.length });
-  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer } });
+  // Czas klatki w ms (renderowanie synchroniczne, działa też w karcie w tle): app.bench(30).
+  const bench = (frames = 30) => {
+    const gl = renderer.getContext();
+    const px = new Uint8Array(4);
+    player.applyToCamera(walkCamera);
+    scene.updateMatrixWorld();
+    const t0 = performance.now();
+    for (let i = 0; i < frames; i++) {
+      renderer.render(scene, walkCamera);
+      gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    }
+    return Math.round(((performance.now() - t0) / frames) * 10) / 10;
+  };
+  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench } });
 }
 
 const clock = new THREE.Clock();

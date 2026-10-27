@@ -32,6 +32,7 @@ export const FURNITURE_BASE = {
   stoneDark: { color: 0x2d2b29, roughness: 0.45 },
   ovenGlass: { color: 0x0d0d0e, roughness: 0.08, metalness: 0.3 },
   sinkBlack: { color: 0x161616, roughness: 0.4 },
+  sinkSteel: { color: 0xc4c6c8, roughness: 0.32, metalness: 0.9 }, // stal szczotkowana – komora zlewu
   fluted: { color: 0x6c6a66, roughness: 0.15, metalness: 0.2, opacity: 0.7 },
   shelfWhite: { color: 0xf2f0ec, roughness: 0.5 },
   art: { color: 0xc8b49c, roughness: 0.9 },

@@ -1,4 +1,5 @@
 import type * as THREE from 'three';
+import type { Outline } from './parts';
 
 /** Parametry mebla z danych trybu (wymiary w cm, nazwy materiałów, przełączniki). */
 export type Params = Record<string, number | string | boolean | undefined>;
@@ -32,6 +33,8 @@ export interface Built {
   collide: boolean;
   /** Modele GLB do wstawienia (adres pliku, docelowa wysokość w cm, obrót wokół pionu w stopniach). */
   models?: { file: string; height: number; rotate?: number }[];
+  /** Tafle luster z prawdziwym odbiciem: kontur w płaszczyźnie xy (dół na `y`, środek na `x`), zwrócone do +z na głębokości `z`. */
+  mirrors?: { kind: Outline; w: number; h: number; r?: number; x?: number; y?: number; z: number }[];
 }
 
 export type Builder = (p: Params) => Built;

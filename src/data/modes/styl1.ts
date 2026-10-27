@@ -110,7 +110,7 @@ export const styl1Furniture: FurnitureItem[] = [
   // ── Hol: szafa z orzecha do sufitu na końcu, wisząca konsola z lustrem, półki na obrazy, profil LED ──
   { id: 'hallWardrobe', type: 'wardrobe', x: 1006.9, y: 61.7, facing: '-x', params: { w: 123, d: 58, h: CEIL, doors: 2 } },
   { id: 'hallConsole', type: 'block', x: 917, y: 12.5, z: 80, facing: '+y', params: { w: 105, d: 25, h: 12, r: 0.5 } },
-  { id: 'hallMirror', type: 'mirrorRect', x: 917, y: 1, z: 105, facing: '+y', params: { w: 60, h: 90 } },
+  { id: 'hallMirror', type: 'mirror', x: 917, y: 1, z: 102, facing: '+y', params: { shape: 'arch', w: 60, h: 95, frame: 'brass', frameW: 2 } }, // lustro w łuku, mosiężna rama
   { id: 'pictureShelfA', type: 'wallShelf', x: 423, y: 4, z: 150, facing: '+y', params: { w: 140, d: 8, mat: 'walnut' } },
   { id: 'pictureShelfB', type: 'wallShelf', x: 639.5, y: 4, z: 150, facing: '+y', params: { w: 90, d: 8, mat: 'walnut' } },
   { id: 'hallLed', type: 'block', x: 687, y: 12, z: CEIL - 1.2, facing: '+y', params: { w: 690, d: 4, h: 1, mat: 'led' } },
@@ -173,15 +173,15 @@ export const styl1Furniture: FurnitureItem[] = [
   { id: 'washer', type: 'washer', x: 415, y: 268.6, facing: '-y' },
   { id: 'bathCounter', type: 'block', x: 461.2, y: 270.1, z: 86, facing: '-y', params: { w: 158, d: 52, h: 4, mat: 'travertine' } },
   { id: 'basinCabinet', type: 'drawers', x: 495, y: 271.1, z: 52, facing: '-y', params: { w: 80, d: 50, h: 34, n: 1 } },
-  { id: 'basin', type: 'block', x: 495, y: 266, z: 90, facing: '-y', params: { w: 45, d: 35, h: 12, mat: 'ceramicWhite', r: 5 } },
+  { id: 'basin', type: 'vesselBasin', x: 495, y: 268, z: 90, facing: '-y', params: { w: 46, d: 36 } },
   { id: 'bathTap', type: 'wallTap', x: 495, y: 295.5, z: 112, facing: '-y', params: { mat: 'brass' } },
-  { id: 'bathMirror', type: 'mirrorRound', x: 495, y: 295.5, z: 118, facing: '-y', params: { r: 30 } },
+  { id: 'bathMirror', type: 'mirror', x: 495, y: 295.5, z: 128, facing: '-y', params: { shape: 'oval', w: 58, h: 74, frameW: 0, backlit: true } }, // organiczne lustro z LED
   { id: 'bathLight', type: 'downlight', x: 482, y: 200, facing: '+y', params: { cd: 26, alwaysOn: true } },
 
   // ── WC: zielona glazura na całej ścianie z umywalką, szafka z orzecha, lustro z podświetleniem ──
   { id: 'greenWall', type: 'wallPanel', x: 746.35, y: 295.8, facing: '-y', params: { w: 150.9, h: CEIL, t: 0.6, mat: 'greenTiles' } },
   { id: 'wcVanity', type: 'vanity', x: 746, y: 275.5, facing: '-y', params: { w: 55, d: 40, top: 'travertine', basin: 'ceramicWhite', tap: 'brass' } },
-  { id: 'wcMirror', type: 'mirrorBacklit', x: 746, y: 295.3, z: 118, facing: '-y', params: { w: 42, h: 70 } },
+  { id: 'wcMirror', type: 'mirror', x: 746, y: 295.3, z: 118, facing: '-y', params: { shape: 'capsule', w: 40, h: 70, frame: 'brass', frameW: 1.5, backlit: true } }, // lustro-kapsuła
   { id: 'wcFrame2', type: 'block', x: 645.9, y: 184.8, facing: '+x', params: { w: 80, d: 20, h: 110, mat: 'wallBathroom', collide: true } },
   { id: 'wc2', type: 'wcWallHung', x: 682.9, y: 184.8, facing: '+x', params: { mat: 'ceramicWhite', plate: 'brass', plateZ: 86 } },
   { id: 'wcLight', type: 'downlight', x: 746, y: 200, facing: '+y', params: { cd: 22, alwaysOn: true } },

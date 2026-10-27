@@ -1,6 +1,7 @@
 // Zabudowa kuchenna: szafki dolne z blatem (opcjonalnie zlew / płyta z piekarnikiem), szafki górne, lodówka w zabudowie, okap, panel ścienny.
 import type { Builder, Params, Part } from '../types';
-import { cylinder, ring, rod, span } from '../parts';
+import { basin, cylinder, plate, ring, rod, span, tube } from '../parts';
+import type { Part as P } from '../types';
 
 const num = (p: Params, key: string, fallback: number) => (typeof p[key] === 'number' ? (p[key] as number) : fallback);
 const str = (p: Params, key: string, fallback: string) => (typeof p[key] === 'string' ? (p[key] as string) : fallback);
@@ -19,9 +20,11 @@ export const baseCabinet: Builder = (p) => {
   const body = h - COUNTER;
   const parts: Part[] = [
     span('blackMatte', -w / 2, w / 2, 0, PLINTH, -d / 2, d / 2 - 6), // cokół
-    span(str(p, 'carcass', 'blackMatte'), -w / 2, w / 2, PLINTH, body, -d / 2, d / 2 - 2), // korpus
-    span(top, -w / 2, w / 2, body, h, -d / 2, d / 2, 0.3), // blat
+    span(str(p, 'carcass', 'blackMatte'), -w / 2, w / 2, PLINTH, p.appliance === 'sink' ? body - 22 : body, -d / 2, d / 2 - 2), // korpus (pod zlewem niższy – miejsce na komorę)
   ];
+  // Zlew podwieszany: otwór w blacie, pod nim stalowa komora z zaokrąglonym dnem.
+  const bowl = { w: Math.min(w - 22, 54), d: d - 20, z: 2 };
+  parts.push(p.appliance === 'sink' ? plate(top, w, d, COUNTER, h, { w: bowl.w - 1.2, d: bowl.d - 1.2, r: 2.5, z: bowl.z }) : span(top, -w / 2, w / 2, body, h, -d / 2, d / 2, 0.3)); // blat
   const fw = w / doors;
   for (let i = 0; i < doors; i++) {
     const x0 = -w / 2 + i * fw;
@@ -41,13 +44,25 @@ export const baseCabinet: Builder = (p) => {
       parts.push(ring('steel', r, 0.25, x, h + 0.7, z));
   }
   if (p.appliance === 'sink') {
-    // Komora zlewu (ciemna wnęka w blacie) i bateria.
-    parts.push(span('sinkBlack', -w / 2 + 8, w / 2 - 8, h - 0.4, h + 0.2, -d / 2 + 8, d / 2 - 10, 1));
-    parts.push(cylinder(str(p, 'tap', 'blackMetal'), 1.6, 1.8, 26, 0, h, -d / 2 + 4));
-    parts.push(rod(str(p, 'tap', 'blackMetal'), 1.2, 18, 0, h + 25, -d / 2 + 12, 'z'));
+    const steel = str(p, 'bowl', 'sinkSteel');
+    parts.push(basin(steel, bowl.w, bowl.d, 20, 3.5, 0, body, bowl.z));
+    parts.push(ring(steel, 4.2, 0.5, 0, body - 19.9, bowl.z + 6), cylinder('steel', 4, 4, 0.3, 0, body - 20, bowl.z + 6, 32)); // odpływ z koszykiem
+    parts.push(...kitchenTap(str(p, 'tap', 'blackMetal'), h, -d / 2 + 5));
   }
   return { parts, size: { w, d, h }, collide: true };
 };
+
+/** Bateria kuchenna „łabędzia szyja”: korpus, wysoka wylewka z perlatorem, dźwignia z boku. */
+function kitchenTap(mat: string, y: number, z: number): P[] {
+  return [
+    cylinder(mat, 2.8, 3, 1.2, 0, y, z, 32), // rozeta
+    cylinder(mat, 1.6, 1.7, 9, 0, y + 1.2, z, 32), // korpus
+    tube(mat, [[0, y + 9, z], [0, y + 24, z], [0, y + 31, z + 3], [0, y + 33, z + 10], [0, y + 30, z + 17], [0, y + 24, z + 19]], 1.15),
+    cylinder(mat, 1.35, 1.35, 2.2, 0, y + 22, z + 19, 24), // perlator
+    rod(mat, 0.55, 7, 3.6, y + 7, z, 'x'), // dźwignia
+    cylinder(mat, 0.9, 0.9, 1.2, 1.6, y + 6.4, z, 16),
+  ];
+}
 
 /** Szafka górna (wisząca); `glass` – front z ryflowanym szkłem i podświetleniem. */
 export const wallCabinet: Builder = (p) => {

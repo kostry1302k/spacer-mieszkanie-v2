@@ -94,3 +94,22 @@ export function rectFromPoints(points: readonly [number, number][]): Rect {
   const ys = points.map((p) => p[1]);
   return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
 }
+
+/** Czy odcinek A–B w rzucie przecina prostokąt (metoda Lianga–Barsky’ego). */
+export function segmentHitsRect(ax: number, ay: number, bx: number, by: number, r: Rect): boolean {
+  let t0 = 0;
+  let t1 = 1;
+  const dx = bx - ax;
+  const dy = by - ay;
+  for (const [p, q] of [[-dx, ax - r.x0], [dx, r.x1 - ax], [-dy, ay - r.y0], [dy, r.y1 - ay]]) {
+    if (p === 0) {
+      if (q < 0) return false;
+      continue;
+    }
+    const t = q / p;
+    if (p < 0) t0 = Math.max(t0, t);
+    else t1 = Math.min(t1, t);
+    if (t0 > t1) return false;
+  }
+  return true;
+}

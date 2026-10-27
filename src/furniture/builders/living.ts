@@ -1,6 +1,7 @@
 // Meble pokojowe: sofa, stoliki, szafka RTV, lamele, telewizor, stół i krzesła, łóżko, szafki, półki, dywany, obrazy.
 import type { Builder, Params, Part } from '../types';
 import { box, cylinder, span } from '../parts';
+import { mirror } from './bathroom';
 
 const num = (p: Params, key: string, fallback: number) => (typeof p[key] === 'number' ? (p[key] as number) : fallback);
 const str = (p: Params, key: string, fallback: string) => (typeof p[key] === 'string' ? (p[key] as string) : fallback);
@@ -229,15 +230,7 @@ export const consoleTable: Builder = (p) => {
 };
 
 /** Lustro prostokątne w cienkiej czarnej ramie. */
-export const mirrorRect: Builder = (p) => {
-  const w = num(p, 'w', 60);
-  const h = num(p, 'h', 100);
-  return {
-    parts: [span('blackMetal', -w / 2, w / 2, 0, h, -1.2, 0, 0.3), span('mirror', -w / 2 + 1.2, w / 2 - 1.2, 1.2, h - 1.2, 0, 0.3)],
-    size: { w, d: 2, h },
-    collide: false,
-  };
-};
+export const mirrorRect: Builder = (p) => mirror({ shape: 'rect', w: num(p, 'w', 60), h: num(p, 'h', 100), r: 0.5, frame: 'blackMetal', frameW: 1.2 });
 
 /**
  * Szafa na ubrania (do sufitu albo zadanej wysokości): fronty bezuchwytowe z frezem, cokół.
