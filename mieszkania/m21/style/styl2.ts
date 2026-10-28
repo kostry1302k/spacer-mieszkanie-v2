@@ -1,10 +1,10 @@
-import type { MaterialSpec, SurfaceKey } from '../../scene/materials';
-import type { FurnitureItem } from '../types';
+import type { MaterialSpec, SurfaceKey } from '../../../src/scene/materials';
+import type { FurnitureItem } from '../../../src/data/types';
 import { styl1Furniture, styl1FurnitureMaterials, styl1Materials } from './styl1';
 
 /**
  * Styl 2 – „Orzech, trawertyn i zieleń”, wariant 2.
- * Źródło: materialy/style/styl-2/Projekty wnętrz — M12 Skypoint · M21 Sfera II.pdf (rzut – plansza 03, widoki – 04–07).
+ * Źródło: materialy/m21/style/styl-2/Projekty wnętrz — M12 Skypoint · M21 Sfera II.pdf (rzut – plansza 03, widoki – 04–07).
  * Paleta, kuchnia, hol, ściana za łóżkiem, łazienka i WC jak w stylu 1; różnice niżej.
  */
 

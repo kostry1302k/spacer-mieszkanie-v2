@@ -5,11 +5,11 @@ gabinet (pokój 4), sypialnia (pokój 5), łazienka, WC, balkon 5,15 m². Widok 
 i dwa warianty wykończenia „Orzech, trawertyn i zieleń” (styl 1, styl 2). Silnik skopiowany ze spaceru M12 (repo `spacer-mieszkanie-v1`); PLAN.md opisuje etapy M12.
 
 ## Źródła prawdy
-1. [materialy/wymiary.md](materialy/wymiary.md) – **jedyne źródło wymiarów**. Wymiary policzone wyłącznie z pól pomieszczeń z karty geodety (opis metody w pliku).
-2. `materialy/rzuty/karta-1.21.pdf` (karta lokalu, pola) i `rzut-1.21.png` (rzut sprzedażowy 1:100) – tylko odniesienie.
-3. `materialy/style/styl-1/` i `styl-2/` – moodboardy (PDF, 7 plansz, ta sama nazwa pliku, inna treść) + zdjęcia inspiracji.
+1. [mieszkania/m21/wymiary.md](mieszkania/m21/wymiary.md) – **jedyne źródło wymiarów**. Wymiary policzone wyłącznie z pól pomieszczeń z karty geodety (opis metody w pliku).
+2. `materialy/m21/rzuty/karta-1.21.pdf` (karta lokalu, pola) i `rzut-1.21.png` (rzut sprzedażowy 1:100) – tylko odniesienie.
+3. `materialy/m21/style/styl-1/` i `styl-2/` – moodboardy (PDF, 7 plansz, ta sama nazwa pliku, inna treść) + zdjęcia inspiracji.
 
-`materialy/` jest tylko do odczytu (poza wymiary.md, zmienianym wyłącznie po decyzji właściciela) i – poza wymiary.md – nie trafia do repozytorium (repo publiczne).
+`materialy/<id>/` jest tylko do odczytu i nie trafia do repozytorium (repo publiczne). wymiary.md zmieniamy wyłącznie po decyzji właściciela.
 
 ## Najważniejsze decyzje (26.10.2026)
 - Wysokość 270. Okna pokoi 4, 5 i pokoju dziennego na **północ** (dziedziniec), balkon na **południe** (+Y).
@@ -29,10 +29,16 @@ i dwa warianty wykończenia „Orzech, trawertyn i zieleń” (styl 1, styl 2). 
 ```
 CLAUDE.md, PLAN.md
 index.html                 – szkielet strony, kontener canvas + HUD
-vite.config.ts             – base './', podział chunków
+vite.config.ts             – base './', podział chunków, alias `@mieszkanie` → mieszkania/<MIESZKANIE, domyślnie m21>
 package.json
 .github/workflows/deploy.yml – build i publikacja na GitHub Pages
-materialy/                 – materiały źródłowe (tylko odczyt)
+mieszkania/<id>/           – DANE mieszkania (wszystko, co nie jest silnikiem):
+  index.ts                 – `site`: podpis, rzut, lista trybów (rawMode + finishMode dla każdego stylu)
+  apartment.ts             – JEDYNY plik geometrii: ściany, otwory, drzwi, okna, szachty, pokoje, balkon, grzejniki, elektryka
+  style/styl1.ts, styl2.ts – materiały, paleta mebli i lista mebli (typ, środek obrysu w cm, kierunek frontu, parametry);
+                             styl 2 dziedziczy styl 1 i podmienia wybrane meble (zbiór REPLACED)
+  wymiary.md               – wymiary i decyzje dla tego mieszkania
+materialy/<id>/            – rzuty, moodboardy, zdjęcia (tylko lokalnie, poza git)
 public/assets/
   textures/<id>/<1k|2k>/   – tekstury PBR CC0: color.jpg, normal.jpg (OpenGL), roughness.jpg
   models/<id>.glb          – meble GLB (skompresowane)
@@ -40,9 +46,10 @@ public/assets/
   CREDITS.md               – źródło, autor, licencja każdego zasobu (generuje `npm run assets`)
 scripts/
   fetch-assets.ts          – pobiera zasoby z listy (Poly Haven API / ambientCG), konwertuje, zapisuje CREDITS
-  check-data.ts            – walidacja danych mieszkania (zamknięte obrysy, otwory w ścianach, metraże vs wymiary.md)
-src/
+  check-data.ts            – walidacja danych mieszkania MIESZKANIE (zamknięte obrysy, otwory w ścianach, metraże vs wymiary.md)
+src/                       – SILNIK: bez danych i nazw konkretnego mieszkania
   main.ts                  – start aplikacji, spina moduły
+  site.ts                  – jedyny punkt styku z danymi (`@mieszkanie`): rzut, tryby, podpis
   core/
     units.ts               – cm → m (dane w cm, scena w metrach: 1 jednostka = 1 m)
     plan.ts                – obliczenia na rzucie: pole i środek wielokąta, oś ściany, filtr wariantu (bez zależności, używa go też check-data)
@@ -51,14 +58,11 @@ src/
     assets.ts              – materiały trybów ładowane przy pierwszym użyciu, wspólne tekstury, zwalnianie pamięci GPU po zmianie trybu
     debug.ts               – tryb `?debug` w adresie: licznik FPS; w konsoli `app.walk(...)`, `app.pick()` do testów
   data/
-    apartment.ts           – JEDYNY plik geometrii: ściany, otwory, drzwi, okna, szachty, pokoje, wysokości, balkon, grzejniki, elektryka
     types.ts               – typy danych (Wall, Opening, Door, Room, Fixture…)
     modes/
-      index.ts             – definicje trybów (nazwa, materiały, wymuszony wariant, drzwi wewnętrzne, oprawy sufitowe)
+      index.ts             – typ trybu, `rawMode` (stan surowy, wspólny) i `finishMode` (styl na wspólnej palecie mebli)
       common.ts            – powierzchnie wspólne dla trybów (stolarka, elewacja, grzejniki, osprzęt)
       raw.ts               – tryb surowy: wylewka, szary tynk, gołe żarówki
-      styl1.ts             – styl 1: materiały, paleta mebli i lista mebli (typ, środek obrysu w cm, kierunek frontu, parametry)
-      styl2.ts             – styl 2: dziedziczy styl 1, podmienia wybrane meble (zbiór REPLACED) i dodaje własne
     materials.ts           – katalog tekstur PBR (id, rzeczywisty rozmiar kafla w m, dostępne rozdzielczości) i HDRI nieba
   geometry/
     apartmentModel.ts      – składa całą bryłę mieszkania z danych dla wariantu i zestawu materiałów
@@ -98,13 +102,14 @@ src/
 ```
 
 ## Zasady pracy
-- **Geometria tylko z `src/data/apartment.ts`.** Żadnych liczb wymiarowych w modułach geometrii, sterowania czy minimapy. Dane w cm, dokładnie jak w wymiary.md (te same nazwy i współrzędne), konwersja na metry w jednym miejscu (`core/units.ts`).
+- **Silnik (`src/`) nie zna żadnego mieszkania** – dane trafiają do niego wyłącznie przez `src/site.ts`. Nowe mieszkanie = nowy folder `mieszkania/<id>/`, a `MIESZKANIE=<id> npm run dev|build` wybiera, które budujemy.
+- **Geometria tylko z `mieszkania/<id>/apartment.ts`.** Żadnych liczb wymiarowych w modułach geometrii, sterowania czy minimapy. Dane w cm, dokładnie jak w wymiary.md (te same nazwy i współrzędne), konwersja na metry w jednym miejscu (`core/units.ts`).
 - Zmiana wymiaru: najpierw wymiary.md (za zgodą właściciela), potem apartment.ts, potem `npm run check:data`.
 - Układ współrzędnych jak w wymiary.md: X w prawo, Y w głąb (→ w Three.js oś Z), wysokość → oś Y Three.js. Początek w lewym górnym narożniku pokoju dziennego.
 - Ściany zewnętrzne i międzylokalowe modelujemy z prawdziwą grubością, żeby ościeża i wnęki okien wyglądały wiarygodnie.
-- Tryby różnią się tylko danymi w `data/modes/*`; kod budujący scenę jest wspólny. Materiał lica ściany i podłogi wynika z rodzaju pomieszczenia (`Room.kind`), np. łazienka → `wallBathroom` / `floorBathroom`. Przełączenie trybu nie przeładowuje strony, zasoby trybu ładujemy przy pierwszym użyciu.
+- Tryby różnią się tylko danymi (`mieszkania/<id>/style/*`); kod budujący scenę jest wspólny. Materiał lica ściany i podłogi wynika z rodzaju pomieszczenia (`Room.kind`), np. łazienka → `wallBathroom` / `floorBathroom`. Przełączenie trybu nie przeładowuje strony, zasoby trybu ładujemy przy pierwszym użyciu.
 - **Zasoby tylko CC0**: Poly Haven (tekstury, HDRI, modele), ambientCG (tekstury). Każdy plik wpisany do `public/assets/CREDITS.md` (URL, autor, licencja). Nie dodawać zasobów bez licencji ani z „free for personal use”.
-- Meble to dane (`FurnitureItem` w `data/modes/styl*.ts`), nie kod: przy rozstawianiu pilnuj pola skrzydeł drzwi (balkonowe X 122–306 do Y ≈ 770, pokoje 4 i 5, łazienka i WC do holu) i przejść ≥ 45 cm (gracz ma promień 22 cm). Trasy sprawdzaj w konsoli `?debug` (`app.walk`).
+- Meble to dane (`FurnitureItem` w `mieszkania/<id>/style/styl*.ts`), nie kod: przy rozstawianiu pilnuj pola skrzydeł drzwi (balkonowe X 122–306 do Y ≈ 770, pokoje 4 i 5, łazienka i WC do holu) i przejść ≥ 45 cm (gracz ma promień 22 cm). Trasy sprawdzaj w konsoli `?debug` (`app.walk`).
 - Ceramika i armatura mają dokładne kształty z `furniture/parts.ts`: `basin` (misa od środka – zlew, wanna), `plate` (blat z otworem), `lathe` (umywalka toczona), `tube` (wylewki baterii). Lustra zwracają `mirrors` – w `place.ts` to `Reflector` z prawdziwym odbiciem (512 px, na telefonie 256), odświeżany tylko gdy lustro jest bliżej niż 6 m i widać je zza ścian. Czas klatki: `app.bench(20)` w `?debug`.
 - Lampy są meblami (builder zwraca `lights`); źródła `alwaysOn` świecą też w dzień (łazienka bez okna). Na telefonie ograniczamy liczbę lamp: taśmy LED świecą tylko materiałem, bez osobnego źródła.
 - Gdy nie ma pasującego modelu CC0, mebel modelujemy proceduralnie w `furniture/builders`: zaokrąglone krawędzie (RoundedBoxGeometry/fazki), poprawne proporcje z katalogów (sofa 85 cm wys., siedzisko 45, blat 90, stół 75 itd.), osobne materiały dla tkaniny, drewna, metalu.
@@ -118,12 +123,12 @@ src/
 npm run dev          # serwer deweloperski (z --host, żeby sprawdzić na telefonie w tej samej sieci)
 npm run build        # build do dist/
 npm run preview      # podgląd builda
-npm run check:data   # walidacja apartment.ts
+npm run check:data   # walidacja mieszkania/<MIESZKANIE>/apartment.ts
 npm run assets       # pobranie i konwersja zasobów CC0 (tylko macOS – używa sips)
 ```
 
 ## Styl „Orzech, trawertyn i zieleń”
-**Źródło: moodboard PDF (wyżej).** Dane w `src/data/modes/styl1.ts`.
+**Źródło: moodboard PDF (wyżej).** Dane w `mieszkania/m21/style/styl1.ts`.
 - **Paleta:** wapno #EEE7DC (ściany, sufity), trawertyn #D8C8AF (blaty, stoliki, pas za łóżkiem), len i bouclé #E6DCCB (tkaniny), orzech #5E3B26 (kuchnia do sufitu, ściana TV, boiserie, szafy), dąb w jodełkę #9A7353 wszędzie bez progów, butelkowa zieleń #2F4A3A (glazura 7,5 × 30 – plecy kuchni, ściana WC), glina #C9978A (ryflowane płytki w łazience), lastryko w łazience i WC, mosiądz szczotkowany; czerń tylko w cienkich liniach i kopule nad stołem.
 - **Pokój dzienny:** kuchnia na prawej ścianie (słupek z lodówką, blat 275, góra orzech do sufitu), półwysep 150 × 60 z 2 hokerami, ściana TV z orzecha z podświetlaną niszą, szafka RTV 150 lewitująca 15 cm, sofa bouclé 240, stolik ø 90, stół ø 100 z 3 krzesłami, czarna kopuła, komoda 180 × 40, juta, lniane zasłony.
 - **Sypialnia:** łóżko 160 × 200 przy prawej ścianie, boiserie z orzecha h 105 + pas trawertynu + ryflowane panele do sufitu, mosiężne kinkiety, ławka, szafa 230 × 60 z frezowanymi frontami, fotel bouclé ze stolikiem.
@@ -133,7 +138,7 @@ npm run assets       # pobranie i konwersja zasobów CC0 (tylko macOS – używa
 - **Odstępstwa:** szafka RTV 150 zamiast 220 (skrzydło prawych drzwi balkonowych parkuje przy ścianie TV od Y ≈ 770), lustro w holu prostokątne zamiast łukowego, lampa łukowa zastąpiona stojącą z abażurem, „oliwka” to model rośliny CC0.
 
 ## Styl 2 – „Orzech, trawertyn i zieleń”, wariant 2
-**Źródło: `materialy/style/styl-2/…pdf`.** Dane w `src/data/modes/styl2.ts`; paleta, kuchnia, hol, ściana za łóżkiem, łazienka i WC jak w stylu 1.
+**Źródło: `materialy/m21/style/styl-2/…pdf`.** Dane w `mieszkania/m21/style/styl2.ts`; paleta, kuchnia, hol, ściana za łóżkiem, łazienka i WC jak w stylu 1.
 - **Podłoga:** gres ośmiokątny 20 × 20 w odcieniu trawertynu z zieloną kostką w holu i pasie kuchni (X 179–327,7, Y 0–460,6), mosiężna listwa na granicy z jodełką (`TilesSpec.dots`).
 - **Pokój dzienny:** stół orzech 180 × 90, tapicerowana ławka pod lewą ścianą + 3 krzesła bouclé, dwie czarne kopuły; narożnik bouclé 270 z szezlongiem od strony kuchni; ściana TV: tapeta z trawy morskiej + panel z orzecha 180 na całą wysokość z TV; jasna kopuła nad półwyspem.
 - **Sypialnia:** szafa przesuwna 292 × 65 naprzeciw łóżka (Y −315…−23), środkowe drzwi odsunięte, za nimi TV 43″.

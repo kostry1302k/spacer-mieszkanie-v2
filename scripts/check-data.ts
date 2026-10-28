@@ -1,5 +1,8 @@
-// Walidacja src/data/apartment.ts: uruchamiane przez `npm run check:data` i przed każdym buildem.
-import { apartment as ap } from '../src/data/apartment.ts';
+// Walidacja mieszkania/<id>/apartment.ts (MIESZKANIE, domyślnie m21): uruchamiane przez `npm run check:data` i przed każdym buildem.
+import type { Apartment } from '../src/data/types.ts';
+
+const mieszkanie = process.env.MIESZKANIE ?? 'm21';
+const ap: Apartment = (await import(`../mieszkania/${mieszkanie}/apartment.ts`)).apartment;
 import { inVariant, polygonArea, wallAxis, wallsFor } from '../src/core/plan.ts';
 import type { Variant, Wall } from '../src/data/types.ts';
 

@@ -1,10 +1,10 @@
-import type { MaterialSpec, SurfaceKey } from '../../scene/materials';
-import type { FurnitureItem } from '../types';
-import { COMMON } from './common';
+import type { MaterialSpec, SurfaceKey } from '../../../src/scene/materials';
+import type { FurnitureItem } from '../../../src/data/types';
+import { COMMON } from '../../../src/data/modes/common';
 
 /**
  * Styl „Orzech, trawertyn i zieleń”.
- * Źródło: materialy/style/styl-1/Projekty wnętrz — M12 Skypoint · M21 Sfera II.pdf (paleta, rzut, widoki pomieszczeń).
+ * Źródło: materialy/m21/style/styl-1/Projekty wnętrz — M12 Skypoint · M21 Sfera II.pdf (paleta, rzut, widoki pomieszczeń).
  */
 
 // Paleta z moodboardu (kolory orientacyjne).

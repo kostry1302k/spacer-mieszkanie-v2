@@ -3,10 +3,9 @@ import type { FurnitureItem, Variant } from '../types';
 import type { CeilingFixture } from '../../geometry/fixtures';
 import { FURNITURE_BASE } from './common';
 import { rawMaterials } from './raw';
-import { styl1Furniture, styl1FurnitureMaterials, styl1Materials } from './styl1';
-import { styl2Furniture, styl2FurnitureMaterials, styl2Materials } from './styl2';
 
-export type ModeId = 'raw' | 'styl1' | 'styl2';
+/** Identyfikator trybu (przycisk w panelu): 'raw' i style danego mieszkania. */
+export type ModeId = string;
 
 export interface ModeDefinition {
   id: ModeId;
@@ -23,35 +22,28 @@ export interface ModeDefinition {
   furniture: FurnitureItem[];
 }
 
-export const MODES: Record<ModeId, ModeDefinition> = {
-  raw: {
-    id: 'raw',
-    name: 'Stan surowy',
-    label: 'Surowy',
-    materials: rawMaterials,
-    variant: 'developer', // M21: bez przeróbek ścian
-    interiorDoors: false,
-    ceilingFixture: 'bulb',
-    furniture: [],
-  },
-  styl1: {
-    id: 'styl1',
-    name: 'Orzech, trawertyn i zieleń',
-    label: 'Styl 1',
-    materials: { ...FURNITURE_BASE, ...styl1FurnitureMaterials, ...styl1Materials },
-    variant: 'developer',
-    interiorDoors: true,
-    ceilingFixture: 'none',
-    furniture: styl1Furniture,
-  },
-  styl2: {
-    id: 'styl2',
-    name: 'Orzech, trawertyn i zieleń · wariant 2',
-    label: 'Styl 2',
-    materials: { ...FURNITURE_BASE, ...styl2FurnitureMaterials, ...styl2Materials },
-    variant: 'developer',
-    interiorDoors: true,
-    ceilingFixture: 'none',
-    furniture: styl2Furniture,
-  },
-};
+/** Stan surowy – wspólny dla wszystkich mieszkań; `variant: null`, gdy mieszkanie ma przełącznik nowej ścianki. */
+export const rawMode = (variant: Variant | null = 'developer'): ModeDefinition => ({
+  id: 'raw',
+  name: 'Stan surowy',
+  label: 'Surowy',
+  materials: rawMaterials,
+  variant,
+  interiorDoors: false,
+  ceilingFixture: 'bulb',
+  furniture: [],
+});
+
+/** Styl wykończenia: materiały architektury i meble na wspólnej palecie mebli. */
+export const finishMode = (
+  def: Pick<ModeDefinition, 'id' | 'name' | 'label' | 'furniture'> & { surfaces: Record<SurfaceKey, MaterialSpec>; palette: Record<string, MaterialSpec>; variant?: Variant },
+): ModeDefinition => ({
+  id: def.id,
+  name: def.name,
+  label: def.label,
+  materials: { ...FURNITURE_BASE, ...def.palette, ...def.surfaces },
+  variant: def.variant ?? 'developer',
+  interiorDoors: true,
+  ceilingFixture: 'none',
+  furniture: def.furniture,
+});

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { apartment } from './data/apartment';
-import { MODES, type ModeId } from './data/modes';
+import { apartment, badge, DEFAULT_MODE, MODES } from './site';
+import type { ModeId } from './data/modes';
 import type { Room, Variant } from './data/types';
 import { buildApartmentModel, type ApartmentModel } from './geometry/apartmentModel';
 import { createRenderer, bindResize } from './scene/renderer';
@@ -30,6 +30,8 @@ import './styles/main.css';
 
 const canvas = document.querySelector<HTMLCanvasElement>('#scene')!;
 const hudRoot = document.querySelector<HTMLElement>('#hud')!;
+document.title = `Spacer – ${apartment.name}`;
+hudRoot.querySelector('.badge')!.textContent = badge;
 const renderer = createRenderer({ canvas, maxPixelRatio: qualityProfile.maxPixelRatio });
 const textureRes = qualityProfile.textureSize === 2048 ? '2k' : '1k';
 
@@ -39,7 +41,7 @@ const lighting = new Lighting(apartment, scene, renderer, qualityProfile.shadowM
 scene.add(lighting.group);
 
 const availableViews: AppView[] = ['walk', 'orbit', 'top'];
-const store = new Store<AppState>({ mode: 'raw', view: 'walk', time: 'day', rebuild: false, ceiling: false, labels: true });
+const store = new Store<AppState>({ mode: DEFAULT_MODE, view: 'walk', time: 'day', rebuild: false, ceiling: false, labels: true });
 const variantOf = (s: AppState): Variant => MODES[s.mode].variant ?? (s.rebuild ? 'rebuild' : 'developer');
 
 // Widoki: spacer (kamera na wysokości oczu) i makieta (orbita / z góry).

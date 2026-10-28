@@ -1,6 +1,6 @@
 // JEDYNE źródło geometrii mieszkania. Liczby przepisane z materialy/wymiary.md (cm).
 // Zmiana wymiaru: najpierw wymiary.md, potem ten plik, potem `npm run check:data`.
-import type { Apartment } from './types';
+import type { Apartment } from '../../src/data/types';
 
 const H = 270;
 

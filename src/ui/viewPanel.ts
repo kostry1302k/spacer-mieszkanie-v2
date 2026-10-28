@@ -1,4 +1,5 @@
-import { MODES, type ModeId } from '../data/modes';
+import { MODES } from '../site';
+import type { ModeId } from '../data/modes';
 import type { AppState, AppView, Store } from '../core/state';
 import type { TimeOfDay } from '../scene/lighting';
 

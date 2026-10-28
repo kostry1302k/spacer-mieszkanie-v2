@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Wirtualny spacer po mieszkaniu M12, Skypoint 57",
+  "description": "Wirtualny spacer po mieszkaniu – silnik + dane mieszkań w mieszkania/<id>",
   "scripts": {
     "dev": "vite --host",
     "build": "npm run check:data && tsc --noEmit && vite build",
