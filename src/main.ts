@@ -194,10 +194,10 @@ function rebuild(): void {
 
 // ── Wypalone światło: gdy w public/bake/<mieszkanie>/ jest lightmapa dla trybu i pory dnia, zastępuje bryły stałe ──
 const bakeDir = `${import.meta.env.BASE_URL}bake/${siteId}/`;
-// `?live` w adresie: światło liczone na żywo (porównanie „przed i po”).
-const bakeIndex: Promise<string[]> = new URLSearchParams(location.search).has('live')
-  ? Promise.resolve([])
-  : fetch(`${bakeDir}index.json`).then((r) => (r.ok ? r.json() : []), () => []);
+// Na czas testów wypalone światło tylko z `?bake` w adresie; domyślnie światło na żywo.
+const bakeIndex: Promise<string[]> = new URLSearchParams(location.search).has('bake')
+  ? fetch(`${bakeDir}index.json`).then((r) => (r.ok ? r.json() : []), () => [])
+  : Promise.resolve([]);
 let baked: Awaited<ReturnType<typeof loadBake>> | null = null;
 let bakedKey = '';
 let bakeRequest = 0;

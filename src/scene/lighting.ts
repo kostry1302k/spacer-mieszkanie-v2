@@ -142,7 +142,9 @@ export class Lighting {
       w.intensity = this.baked ? 0 : p.sky;
       w.color.set(p.skyColor);
     }
-    this.scene.environmentIntensity = p.environment;
+    // Po wypaleniu niebo z HDRI (z zieloną trawą) jest już w lightmapie; materiał nie wyłączy go sam (three bierze
+    // natężenie otoczenia sceny), więc zostaje tylko ślad – na odbicia metalu i połysków.
+    this.scene.environmentIntensity = this.baked ? p.environment * 0.15 : p.environment;
     this.scene.backgroundIntensity = p.background;
     for (const { light, lamp } of this.lamps) {
       const on = (p.lampsOn || Boolean(lamp.alwaysOn)) && !this.baked;

@@ -142,43 +142,70 @@ baked.data.uv_layers.active = lightmap_uv
 bpy.ops.object.mode_set(mode='EDIT')
 bpy.ops.mesh.select_all(action='SELECT')
 bpy.ops.mesh.remove_doubles(threshold=0.0005)
-bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.0, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+# correct_aspect=False: inaczej Blender bierze proporcje z dowolnej tekstury (płytki 8:1) i ściska wyspy 8× (smugi na ścianach).
+bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.0, area_weight=0.0, correct_aspect=False, scale_to_bounds=False)
 bpy.ops.uv.pack_islands(rotate=True, margin=0.002)
 bpy.ops.object.mode_set(mode='OBJECT')
 stamp('UV')
 
-# ── Obraz docelowy we wszystkich materiałach ──
-img = bpy.data.images.new('lightmap', a.size, a.size, float_buffer=True, alpha=False)
+# ── Obrazy docelowe: światło + pomocnicze (kolor i normalne) dla odszumiania ──
+def target(name):
+    return bpy.data.images.new(name, a.size, a.size, float_buffer=True, alpha=False)
+
+
+img, albedo, normal = target('lightmap'), target('albedo'), target('normal')
+albedo.pixels.foreach_set(np.ones(a.size * a.size * 4, dtype=np.float32))  # mapa to samo światło (biała powierzchnia) – taki „kolor” dla odszumiania
+bake_nodes = []
 for slot in baked.material_slots:
     mat = slot.material
     mat.use_nodes = True
     node = mat.node_tree.nodes.new('ShaderNodeTexImage')
-    node.image = img
     mat.node_tree.nodes.active = node
+    bake_nodes.append(node)
 
-# ── Wypalanie: samo światło rozproszone (bezpośrednie + odbite), bez koloru powierzchni ──
 bpy.ops.object.select_all(action='DESELECT')
 baked.select_set(True)
 bpy.context.view_layer.objects.active = baked
-bake = scene.render.bake
-bake.use_pass_direct = bake.use_pass_indirect = True
-bake.use_pass_color = False  # bez koloru powierzchni – kolor dokłada materiał w spacerze
-bpy.ops.object.bake(type='DIFFUSE', pass_filter={'DIRECT', 'INDIRECT'}, margin=16, use_clear=True)
-stamp('wypalanie')
 
-# ── Odszumianie (OpenImageDenoise w kompozytorze, osobna pusta scena) ──
-pixels = np.empty(a.size * a.size * 4, dtype=np.float32)
-img.pixels.foreach_get(pixels)
+
+def bake_into(image, bake_type, passes, samples):
+    for node in bake_nodes:
+        node.image = image
+    scene.cycles.samples = samples
+    scene.render.bake.margin_type = 'ADJACENT_FACES'  # dopełnienie krawędzi wysp światłem sąsiednich ścian, nie rozmazaniem
+    bpy.ops.object.bake(type=bake_type, pass_filter=passes, margin=16, use_clear=True)
+
+
+# Samo światło rozproszone (bezpośrednie + odbite), bez koloru powierzchni – kolor dokłada materiał w spacerze.
+bake_into(img, 'DIFFUSE', {'DIRECT', 'INDIRECT'}, a.samples)
+stamp('wypalanie')
+bake_into(normal, 'NORMAL', set(), 4)
+stamp('przebiegi pomocnicze')
+
+
+def read(image):
+    data = np.empty(a.size * a.size * 4, dtype=np.float32)
+    image.pixels.foreach_get(data)
+    return data
+
+
+pixels = read(img)
+nor = read(normal)
+nor[np.arange(nor.size) % 4 != 3] = nor[np.arange(nor.size) % 4 != 3] * 2 - 1  # 0..1 → -1..1 (tak czyta OIDN)
+normal.pixels.foreach_set(nor)
+
+# ── Odszumianie OIDN z kolorem i normalnymi: krawędzie i faktura zostają, szum znika (bez tego – plamy) ──
 try:
     den = bpy.data.scenes.new('denoise')
     tree = bpy.data.node_groups.new('denoise', 'CompositorNodeTree')
     den.compositing_node_group = tree
     tree.interface.new_socket(name='Image', in_out='OUTPUT', socket_type='NodeSocketColor')
-    n_img = tree.nodes.new('CompositorNodeImage')
-    n_img.image = img
     n_den = tree.nodes.new('CompositorNodeDenoise')
+    for socket, image in (('Image', img), ('Albedo', albedo), ('Normal', normal)):
+        n = tree.nodes.new('CompositorNodeImage')
+        n.image = image
+        tree.links.new(n.outputs['Image'], n_den.inputs[socket])
     n_out = tree.nodes.new('NodeGroupOutput')
-    tree.links.new(n_img.outputs['Image'], n_den.inputs['Image'])
     tree.links.new(n_den.outputs['Image'], n_out.inputs['Image'])
     cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam'))
     den.collection.objects.link(cam)

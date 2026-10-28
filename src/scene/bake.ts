@@ -62,12 +62,18 @@ function decodeRgbm(shader: THREE.WebGLProgramParametersWithUniforms): void {
 
 /** Wczytuje wypaloną scenę: geometria z drugim UV z Blendera, materiały silnika z lightmapą. */
 export async function loadBake(base: string, mats: MaterialSet): Promise<{ group: THREE.Group; ceilings: THREE.Mesh[]; ambient: number; dispose(): void }> {
-  const [gltf, lightMap, info] = await Promise.all([
+  // ImageBitmap bez mnożenia przez alfę: przeglądarka przy zwykłym <img> mnoży kolor przez alfę i niszczy RGBM
+  // w ciemnych miejscach (mała alfa) – stąd były smugi i oliwkowy odcień.
+  const bitmapLoader = new THREE.ImageBitmapLoader().setOptions({ premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+  const [gltf, bitmap, info] = await Promise.all([
     new GLTFLoader().loadAsync(`${base}.glb`),
-    new THREE.TextureLoader().loadAsync(`${base}.png`),
+    bitmapLoader.loadAsync(`${base}.png`),
     fetch(`${base}.json`).then((r) => r.json() as Promise<BakeInfo>),
   ]);
+  const lightMap = new THREE.Texture(bitmap);
   lightMap.flipY = false;
+  lightMap.premultiplyAlpha = false;
+  lightMap.needsUpdate = true;
   lightMap.channel = 1;
   lightMap.colorSpace = THREE.NoColorSpace; // RGBM – dane, nie kolor
   lightMap.generateMipmaps = false; // mipmapy mieszałyby sąsiednie wyspy UV (ciemne szwy w oddali)
@@ -87,7 +93,6 @@ export async function loadBake(base: string, mats: MaterialSet): Promise<{ group
     mat.lightMapIntensity = info.scale * Math.PI * 2 ** (info.exposure ?? 0);
     mat.onBeforeCompile = decodeRgbm;
     mat.customProgramCacheKey = () => 'rgbm';
-    mat.envMapIntensity = 0.3; // niebo z HDRI zostaje głównie w odbiciach – rozproszone jest już wypalone
     mat.userData = source.userData; // świecenie lamp sterowane jak w oryginale
     own.push(mat);
     (mesh.material as THREE.Material).dispose();
@@ -105,6 +110,7 @@ export async function loadBake(base: string, mats: MaterialSet): Promise<{ group
       meshes.forEach((m) => m.geometry.dispose());
       own.forEach((m) => m.dispose());
       lightMap.dispose();
+      bitmap.close();
     },
   };
 }
