@@ -40,6 +40,8 @@ export class Lighting {
   private lamps: { light: THREE.PointLight; lamp: Lamp }[] = [];
   private readonly lampGroup = new THREE.Group();
   private time: TimeOfDay = 'day';
+  /** Światło rozproszone wypalone w lightmapach – na żywo zostaje tylko słabe wypełnienie dla brył ruchomych. */
+  private baked = false;
 
   constructor(
     ap: Apartment,
@@ -115,6 +117,16 @@ export class Lighting {
     this.apply();
   }
 
+  /** Kierunek do słońca (jednostkowy, układ three.js) – do wypalania światła w Blenderze. */
+  get sunDirection(): THREE.Vector3 {
+    return this.sun.position.clone().sub(this.sun.target.position).normalize();
+  }
+
+  setBaked(baked: boolean): void {
+    this.baked = baked;
+    this.apply();
+  }
+
   setTime(time: TimeOfDay, materials?: MaterialSet): void {
     this.time = time;
     this.apply(materials);
@@ -124,16 +136,16 @@ export class Lighting {
     const p = PRESETS[this.time];
     this.renderer.toneMappingExposure = p.exposure;
     this.sun.intensity = p.sun;
-    this.sun.visible = p.sun > 0;
-    this.fill.intensity = p.fill;
+    this.sun.visible = p.sun > 0 && !this.baked;
+    this.fill.intensity = this.baked ? 0 : p.fill; // po wypaleniu bryły ruchome dostają równe światło z setAmbientLight
     for (const w of this.windows) {
-      w.intensity = p.sky;
+      w.intensity = this.baked ? 0 : p.sky;
       w.color.set(p.skyColor);
     }
     this.scene.environmentIntensity = p.environment;
     this.scene.backgroundIntensity = p.background;
     for (const { light, lamp } of this.lamps) {
-      const on = p.lampsOn || Boolean(lamp.alwaysOn);
+      const on = (p.lampsOn || Boolean(lamp.alwaysOn)) && !this.baked;
       light.intensity = on ? lamp.intensity : 0;
       light.visible = on;
     }

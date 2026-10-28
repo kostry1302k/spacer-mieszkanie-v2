@@ -8,3 +8,6 @@ materialy/
 
 # lokalna konfiguracja podglądu w aplikacji Claude
 .claude/
+
+# pliki robocze wypalania światła (eksport sceny dla Blendera)
+bake-work/

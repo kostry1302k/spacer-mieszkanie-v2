@@ -1,10 +1,12 @@
 import * as THREE from 'three';
-import { apartment, badge, DEFAULT_MODE, MODES } from './site';
+import { apartment, badge, DEFAULT_MODE, MODES, siteId } from './site';
 import type { ModeId } from './data/modes';
 import type { Room, Variant } from './data/types';
 import { buildApartmentModel, type ApartmentModel } from './geometry/apartmentModel';
 import { createRenderer, bindResize } from './scene/renderer';
 import { PostFx } from './scene/postfx';
+import { bakeLights, exportBakeScene, isBakeable, loadBake, setAmbientLight } from './scene/bake';
+import { SKY_HDRI } from './data/materials';
 import type { MaterialSet } from './scene/materials';
 import { Lighting } from './scene/lighting';
 import { buildEnvironment } from './scene/environment';
@@ -158,6 +160,7 @@ async function loadMode(mode: ModeId): Promise<void> {
 
 function rebuild(): void {
   if (!materials || !loadedMode) return;
+  clearBake();
   if (model) {
     scene.remove(model.root);
     model.dispose();
@@ -189,10 +192,59 @@ function rebuild(): void {
   applyView();
 }
 
+// ── Wypalone światło: gdy w public/bake/<mieszkanie>/ jest lightmapa dla trybu i pory dnia, zastępuje bryły stałe ──
+const bakeDir = `${import.meta.env.BASE_URL}bake/${siteId}/`;
+// `?live` w adresie: światło liczone na żywo (porównanie „przed i po”).
+const bakeIndex: Promise<string[]> = new URLSearchParams(location.search).has('live')
+  ? Promise.resolve([])
+  : fetch(`${bakeDir}index.json`).then((r) => (r.ok ? r.json() : []), () => []);
+let baked: Awaited<ReturnType<typeof loadBake>> | null = null;
+let bakedKey = '';
+let bakeRequest = 0;
+
+const bakeRoots = (): THREE.Object3D[] => [model?.root, furniture?.group].filter((r) => r !== undefined);
+
+function setBakeableVisible(visible: boolean): void {
+  for (const root of bakeRoots()) root.traverse((o) => isBakeable(o) && (o.visible = visible));
+}
+
+function clearBake(): void {
+  bakeRequest++;
+  if (!baked) return;
+  baked.group.removeFromParent();
+  baked.ceilings.forEach((c) => c.removeFromParent());
+  baked.dispose();
+  baked = null;
+  bakedKey = '';
+  setBakeableVisible(true);
+  setAmbientLight(bakeRoots(), 0);
+  lighting.setBaked(false);
+}
+
+async function syncBake(): Promise<void> {
+  const key = `${loadedMode}-${store.get().time}`;
+  if (baked && key === bakedKey) return;
+  const request = ++bakeRequest;
+  const available = (await bakeIndex).includes(key);
+  if (request !== bakeRequest) return;
+  if (!available) return clearBake();
+  const next = await loadBake(bakeDir + key, materials!);
+  if (request !== bakeRequest || !model) return next.dispose();
+  clearBake();
+  baked = next;
+  bakedKey = key;
+  scene.add(next.group);
+  model.ceilings.add(...next.ceilings);
+  setBakeableVisible(false);
+  setAmbientLight(bakeRoots(), next.ambient);
+  lighting.setBaked(true);
+}
+
 function applyView(): void {
   const s = store.get();
   const walk = s.view === 'walk';
   if (materials) lighting.setTime(s.time, materials);
+  if (materials && model) void syncBake();
   if (environment) environment.visible = walk; // elewacja zasłaniałaby makietę
   if (model) model.ceilings.visible = walk || (s.ceiling && s.view === 'orbit');
   labels.setVisible(!walk && s.labels);
@@ -262,10 +314,21 @@ if (isDebug) {
     }
     return Math.round(((performance.now() - t0) / frames) * 10) / 10;
   };
-  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench, postfx } });
+  // Eksport sceny bieżącego trybu do wypalenia światła: app.exportBake('day') → bake-work/<tryb>.glb + <tryb>-day.json.
+  const exportBake = async (time: 'day' | 'evening' = store.get().time) => {
+    if (!model || !environment || !loadedMode) return 'brak sceny';
+    const glb = await exportBakeScene([model.root, ...(furniture ? [furniture.group] : [])], environment);
+    const lights = bakeLights(furniture?.lamps ?? [], time, `public/assets/hdri/${SKY_HDRI.id}_2k.hdr`, lighting.sunDirection);
+    const upload = (name: string, body: BodyInit) => fetch(`/__bake/upload?name=${name}`, { method: 'POST', body });
+    await upload(`${loadedMode}.glb`, glb);
+    await upload(`${loadedMode}-${time}.json`, JSON.stringify(lights));
+    return `${loadedMode}: ${(glb.byteLength / 1e6).toFixed(1)} MB, lamp: ${lights.lamps.length}`;
+  };
+  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench, postfx, exportBake, baked: () => baked } });
 }
 
-const renderWalk = () => (postfx?.enabled ? postfx.render(walkCamera) : renderer.render(scene, walkCamera));
+// Przy wypalonym świetle cienie w kątach są już w lightmapie – efekt GTAO zbędny.
+const renderWalk = () => (postfx?.enabled && !baked ? postfx.render(walkCamera) : renderer.render(scene, walkCamera));
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {

@@ -9,7 +9,8 @@
     "build": "npm run check:data && tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "check:data": "node scripts/check-data.ts",
-    "assets": "node scripts/fetch-assets.ts"
+    "assets": "node scripts/fetch-assets.ts",
+    "bake": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P scripts/bake.py --"
   },
   "dependencies": {
     "three": "0.186.1"

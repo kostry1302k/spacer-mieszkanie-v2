@@ -6,6 +6,7 @@ import { styl1Furniture, styl1FurnitureMaterials, styl1Materials } from './style
 import { styl2Furniture, styl2FurnitureMaterials, styl2Materials } from './style/styl2';
 
 export const site: Site = {
+  id: 'm21',
   badge: 'M21 · Sfera II',
   apartment,
   modes: [

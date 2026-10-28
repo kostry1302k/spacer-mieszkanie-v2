@@ -88,9 +88,18 @@ export function inverted(part: Part): Part {
  * Górna krawędź na wysokości `y`, środek w (x, z).
  */
 export function basin(mat: string, w: number, d: number, depth: number, r: number, x: number, y: number, z: number): Part {
-  const geo = new RoundedBoxGeometry(w, depth * 2, d, 5, Math.min(r, w / 2 - 0.01, d / 2 - 0.01, depth - 0.01));
-  const pos = geo.getAttribute('position');
-  for (let i = 0; i < pos.count; i++) pos.setY(i, Math.min(pos.getY(i), 0)); // górna połowa spłaszczona – misa otwarta od góry
+  const box = new RoundedBoxGeometry(w, depth * 2, d, 5, Math.min(r, w / 2 - 0.01, d / 2 - 0.01, depth - 0.01)).toNonIndexed();
+  const src = box.getAttribute('position');
+  for (let i = 0; i < src.count; i++) src.setY(i, Math.min(src.getY(i), 0)); // górna połowa spłaszczona…
+  // …i usunięta: płaskie „wieko” na krawędzi zasłaniałoby wnętrze przy wypalaniu światła (Cycles widzi obie strony ścianek).
+  const keep: number[] = [];
+  for (let t = 0; t < src.count; t += 3) if (Math.min(src.getY(t), src.getY(t + 1), src.getY(t + 2)) < -1e-4) keep.push(t);
+  const geo = new THREE.BufferGeometry();
+  for (const [name, attr] of Object.entries(box.attributes) as [string, THREE.BufferAttribute][]) {
+    const out = new Float32Array(keep.length * 3 * attr.itemSize);
+    keep.forEach((t, k) => out.set(attr.array.subarray(t * attr.itemSize, (t + 3) * attr.itemSize), k * 3 * attr.itemSize));
+    geo.setAttribute(name, new THREE.BufferAttribute(out, attr.itemSize));
+  }
   geo.translate(x, y, z);
   return inverted({ mat, geo });
 }
