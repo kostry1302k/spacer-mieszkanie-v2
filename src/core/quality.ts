@@ -20,7 +20,7 @@ const WARMUP_SECONDS = 2;
 
 /**
  * Automatyczne obniżanie jakości, gdy średni FPS spada poniżej 30:
- * najpierw rozdzielczość renderowania (DPR), na końcu cienie. Jakości nie podnosi z powrotem.
+ * najpierw przekazane kroki (np. efekty obrazu), potem rozdzielczość renderowania (DPR), na końcu cienie. Jakości nie podnosi z powrotem.
  */
 export class AdaptiveQuality {
   private elapsed = 0;
@@ -29,10 +29,11 @@ export class AdaptiveQuality {
   private level = 0;
   private readonly steps: (() => void)[];
 
-  constructor(private readonly renderer: THREE.WebGLRenderer, private readonly onShadowsOff: () => void) {
+  constructor(private readonly renderer: THREE.WebGLRenderer, private readonly onShadowsOff: () => void, firstSteps: (() => void)[] = []) {
     const start = renderer.getPixelRatio();
     const ratios = [1.25, 1].filter((r) => r < start);
     this.steps = [
+      ...firstSteps,
       ...ratios.map((r) => () => renderer.setPixelRatio(r)),
       () => {
         renderer.shadowMap.enabled = false;

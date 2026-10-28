@@ -4,6 +4,7 @@ import type { ModeId } from './data/modes';
 import type { Room, Variant } from './data/types';
 import { buildApartmentModel, type ApartmentModel } from './geometry/apartmentModel';
 import { createRenderer, bindResize } from './scene/renderer';
+import { PostFx } from './scene/postfx';
 import type { MaterialSet } from './scene/materials';
 import { Lighting } from './scene/lighting';
 import { buildEnvironment } from './scene/environment';
@@ -98,6 +99,8 @@ sidebar.className = 'sidebar';
 sidebar.append(roomList.element, minimap.element);
 hudRoot.appendChild(sidebar);
 
+const postfx = isTouch ? null : new PostFx(renderer, scene, walkCamera); // na telefonie bez efektów – płynność ważniejsza
+
 bindResize(renderer, (w, h) => {
   walkCamera.aspect = w / h;
   // Na pionowym ekranie szerszy kąt w pionie, żeby w poziomie nie widzieć „przez dziurkę od klucza”.
@@ -105,6 +108,7 @@ bindResize(renderer, (w, h) => {
   walkCamera.updateProjectionMatrix();
   views.resize(w, h);
   labels.renderer.setSize(w, h);
+  postfx?.setSize(w, h);
 });
 
 // Materiały trybów (ładowane przy pierwszym użyciu) i niebo.
@@ -225,7 +229,11 @@ player.place(start.x, start.y, start.yaw);
 applyView();
 void loadMode(store.get().mode);
 
-const adaptive = new AdaptiveQuality(renderer, () => materials && Object.values(materials).forEach((mat) => (mat.needsUpdate = true)));
+const adaptive = new AdaptiveQuality(
+  renderer,
+  () => materials && Object.values(materials).forEach((mat) => (mat.needsUpdate = true)),
+  postfx ? [() => (postfx.enabled = false)] : [], // za wolno – najpierw wyłączamy efekty
+);
 const tickFps = isDebug ? createFpsMeter() : null;
 if (isDebug) {
   // Pomoc do testów w konsoli: app.walk({ forward: 1, strafe: 0, run: false }, 2) symuluje 2 s chodu.
@@ -249,13 +257,15 @@ if (isDebug) {
     scene.updateMatrixWorld();
     const t0 = performance.now();
     for (let i = 0; i < frames; i++) {
-      renderer.render(scene, walkCamera);
+      renderWalk();
       gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
     }
     return Math.round(((performance.now() - t0) / frames) * 10) / 10;
   };
-  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench } });
+  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench, postfx } });
 }
+
+const renderWalk = () => (postfx?.enabled ? postfx.render(walkCamera) : renderer.render(scene, walkCamera));
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
@@ -277,7 +287,8 @@ renderer.setAnimationLoop(() => {
     camera = views.camera;
   }
 
-  renderer.render(scene, camera);
+  if (camera === walkCamera) renderWalk();
+  else renderer.render(scene, camera);
   if (labels.group.visible) labels.renderer.render(scene, camera);
   tickFps?.();
   adaptive.tick(frameTime);

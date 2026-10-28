@@ -82,6 +82,7 @@ src/                       – SILNIK: bez danych i nazw konkretnego mieszkania
     renderer.ts            – WebGLRenderer, tone mapping (ACES/AgX), sRGB, resize, DPR
     materials.ts           – klucze powierzchni (SurfaceKey) i tworzenie zestawu materiałów trybu
     views.ts               – widoki makiety: kamera orbitalna 3D i rzut z góry
+    postfx.ts              – efekty obrazu w spacerze, tylko komputer: cienie kontaktowe GTAO (pół rozdzielczości); `app.postfx` w ?debug; wyłączane jako pierwsze przy spadku FPS
     lighting.ts            – niebo HDRI, słońce z południa z cieniem, światło nieba w przeszkleniach (RectAreaLight), żarówki wieczorem; presety dzień/wieczór
     environment.ts         – otoczenie widoczne w spacerze: elewacja, balkony wyższych pięter, trawa (dalej niebo HDRI)
   controls/

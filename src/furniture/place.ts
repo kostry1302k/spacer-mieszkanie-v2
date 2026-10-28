@@ -89,7 +89,8 @@ export function placeFurniture(items: FurnitureItem[], mats: MaterialSet, models
       mirror.forceUpdate = true; // pierwsze odbicie od razu, potem tylko gdy lustro widać
       const render = mirror.onBeforeRender;
       mirror.onBeforeRender = function (renderer, scene, camera, ...rest) {
-        if (reflecting || camera.position.distanceTo(mirror.position) > MIRROR_RANGE) return;
+        // scene.overrideMaterial: przebieg pomocniczy efektów (normalne/głębia) – odbicie zbędne.
+        if (reflecting || scene.overrideMaterial || camera.position.distanceTo(mirror.position) > MIRROR_RANGE) return;
         mirrorNormal.set(0, 0, 0.05).applyQuaternion(mirror.quaternion).add(mirror.position); // punkt 5 cm przed taflą
         if (!this.forceUpdate && !sight(camera.position.x * 100, camera.position.z * 100, mirrorNormal.x * 100, mirrorNormal.z * 100)) return;
         reflecting = true;
