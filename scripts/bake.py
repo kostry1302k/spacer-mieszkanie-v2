@@ -20,6 +20,7 @@ args.add_argument('--out', required=True)
 args.add_argument('--size', type=int, default=4096)
 args.add_argument('--samples', type=int, default=256)
 args.add_argument('--preview', action='store_true', help='zamiast wypalania: render widoku z kamery (<out>-preview.png)')
+args.add_argument('--panorama', action='store_true', help='zamiast wypalania: panorama 360° z kamery (<out>.jpg, szerokość --size)')
 args.add_argument('--camera', default='1.6,1.65,1.6,0', help='x,y,z (m, three.js), kierunek patrzenia w stopniach (0 = +z)')
 args.add_argument('--exposure', type=float, default=4.5, help='ekspozycja wnętrza w EV (jak w aparacie): podgląd i jasność lightmapy w spacerze')
 a = args.parse_args(sys.argv[sys.argv.index('--') + 1:])
@@ -107,7 +108,7 @@ for i, lamp in enumerate(lights['lamps']):
     obj.location = (x, -z, y)
     scene.collection.objects.link(obj)
 
-if a.preview:
+if a.preview or a.panorama:
     x, y, z, yaw = (float(v) for v in a.camera.split(','))
     cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam'))
     cam.data.lens = 18
@@ -115,12 +116,25 @@ if a.preview:
     cam.rotation_euler = (math.radians(90), 0, math.radians(180 + yaw))
     scene.collection.objects.link(cam)
     scene.camera = cam
-    scene.render.resolution_x, scene.render.resolution_y = 800, 600
     scene.view_settings.view_transform = 'AgX'
     scene.view_settings.exposure = a.exposure
-    scene.render.filepath = os.path.abspath(a.out + '-preview.png')
+    scene.cycles.samples = a.samples
+    if a.panorama:
+        # Panorama sferyczna (equirectangular 2:1) – środek obrazu to kierunek `yaw`; odszumianie OIDN z kolorem i normalnymi.
+        cam.data.type = 'PANO'
+        cam.data.panorama_type = 'EQUIRECTANGULAR'
+        scene.render.resolution_x, scene.render.resolution_y = a.size, a.size // 2
+        scene.cycles.use_denoising = True
+        scene.cycles.denoiser = 'OPENIMAGEDENOISE'
+        scene.cycles.adaptive_threshold = 0.02
+        scene.render.image_settings.file_format = 'JPEG'
+        scene.render.image_settings.quality = 88
+        scene.render.filepath = os.path.abspath(a.out + '.jpg')
+    else:
+        scene.render.resolution_x, scene.render.resolution_y = 800, 600
+        scene.render.filepath = os.path.abspath(a.out + '-preview.png')
     bpy.ops.render.render(write_still=True)
-    stamp('podgląd')
+    stamp('panorama' if a.panorama else 'podgląd')
     sys.exit(0)
 
 # ── Jedna bryła do wypalenia (otoczenie `env:*` zostaje osobno – tylko zasłania niebo) ──

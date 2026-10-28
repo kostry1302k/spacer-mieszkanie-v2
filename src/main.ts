@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import { apartment, badge, DEFAULT_MODE, MODES, siteId } from './site';
+import { apartment, badge, DEFAULT_MODE, MODES, panoramas, siteId } from './site';
+import { PanoramaViewer } from './ui/panorama';
+import { pointInPolygon } from './core/plan';
 import type { ModeId } from './data/modes';
 import type { Room, Variant } from './data/types';
 import { buildApartmentModel, type ApartmentModel } from './geometry/apartmentModel';
@@ -69,7 +71,7 @@ const roomList = new RoomList(apartment, (room) => goToRoom(room));
 const desktop = new DesktopControls(canvas, player, {
   onInteract: () => hoveredDoor && doors.toggle(hoveredDoor),
   onLockChange: (locked) => {
-    if (store.get().view !== 'walk') return;
+    if (store.get().view !== 'walk' || pano.active) return;
     hud.setActive(locked);
     if (!locked) hud.setPaused();
   },
@@ -98,7 +100,35 @@ const walkActive = () => desktop.locked || touchWalking;
 
 const sidebar = document.createElement('div');
 sidebar.className = 'sidebar';
-sidebar.append(roomList.element, minimap.element);
+// ── Panoramy 360° z Blendera: przycisk w pokoju, który ma render dla bieżącego stylu i pory dnia (też klawisz P) ──
+const pano = new PanoramaViewer(() => applyView());
+document.querySelector('#app')!.appendChild(pano.element);
+const panoButton = document.createElement('button');
+panoButton.type = 'button';
+panoButton.className = 'pano-open';
+panoButton.textContent = '◉ Zdjęcie 360° (P)';
+panoButton.hidden = true;
+
+function currentPanorama() {
+  const room = apartment.rooms.find((r) => !r.outdoor && pointInPolygon(player.x, player.y, r.polygon));
+  const key = `${loadedMode}-${store.get().time}`;
+  return room && panoramas.find((p) => p.room === room.id && p.renders.includes(key));
+}
+
+function openPanorama(): void {
+  const p = currentPanorama();
+  if (!p || store.get().view !== 'walk') return;
+  desktop.unlock();
+  desktop.enabled = touch.enabled = false;
+  hud.hideAll();
+  sidebar.hidden = true;
+  const room = apartment.rooms.find((r) => r.id === p.room)!;
+  void pano.open(`${import.meta.env.BASE_URL}pano/${siteId}/${loadedMode}-${p.id}-${store.get().time}.jpg`, `${room.name} – ${MODES[loadedMode!].name}`);
+}
+panoButton.addEventListener('click', openPanorama);
+window.addEventListener('keydown', (e) => e.code === 'KeyP' && !pano.active && openPanorama());
+
+sidebar.append(roomList.element, panoButton, minimap.element);
 hudRoot.appendChild(sidebar);
 
 const postfx = isTouch ? null : new PostFx(renderer, scene, walkCamera); // na telefonie bez efektów – płynność ważniejsza
@@ -315,12 +345,13 @@ if (isDebug) {
     return Math.round(((performance.now() - t0) / frames) * 10) / 10;
   };
   // Eksport sceny bieżącego trybu do wypalenia światła: app.exportBake('day') → bake-work/<tryb>.glb + <tryb>-day.json.
-  const exportBake = async (time: 'day' | 'evening' = store.get().time) => {
+  // `full`: cała widoczna scena (drzwi, szkło, lustra, rośliny) do renderu panoram 360° → bake-work/<tryb>-full.glb.
+  const exportBake = async (time: 'day' | 'evening' = store.get().time, full = false) => {
     if (!model || !environment || !loadedMode) return 'brak sceny';
-    const glb = await exportBakeScene([model.root, ...(furniture ? [furniture.group] : [])], environment);
+    const glb = await exportBakeScene([model.root, ...(furniture ? [furniture.group] : [])], environment, full);
     const lights = bakeLights(furniture?.lamps ?? [], time, `public/assets/hdri/${SKY_HDRI.id}_2k.hdr`, lighting.sunDirection);
     const upload = (name: string, body: BodyInit) => fetch(`/__bake/upload?name=${name}`, { method: 'POST', body });
-    await upload(`${loadedMode}.glb`, glb);
+    await upload(`${loadedMode}${full ? '-full' : ''}.glb`, glb);
     await upload(`${loadedMode}-${time}.json`, JSON.stringify(lights));
     return `${loadedMode}: ${(glb.byteLength / 1e6).toFixed(1)} MB, lamp: ${lights.lamps.length}`;
   };
@@ -335,6 +366,11 @@ renderer.setAnimationLoop(() => {
   const frameTime = clock.getDelta();
   const dt = Math.min(frameTime, 0.05);
   doors.update(dt);
+  if (pano.active) {
+    pano.render(renderer);
+    tickFps?.();
+    return;
+  }
 
   let camera: THREE.Camera;
   if (store.get().view === 'walk') {
@@ -345,6 +381,8 @@ renderer.setAnimationLoop(() => {
     const action = hoveredDoor && (doors.isOpen(hoveredDoor) ? 'zamknij' : 'otwórz');
     hud.setHint(action && walkActive() ? (isTouch ? `Dotknij drzwi – ${action}` : `E / klik – ${action} drzwi`) : null);
     minimap.draw(player, doors.outlines());
+    const hasPano = Boolean(currentPanorama());
+    if (panoButton.hidden === hasPano) panoButton.hidden = !hasPano;
   } else {
     views.update();
     camera = views.camera;

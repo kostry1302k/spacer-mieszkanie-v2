@@ -14,17 +14,34 @@ export function isBakeable(o: THREE.Object3D): o is THREE.Mesh {
   return true;
 }
 
-/** Scena do Blendera: bryły do wypalenia + otoczenie (`env:*`) tylko jako przesłona nieba. */
-export async function exportBakeScene(roots: THREE.Object3D[], environment: THREE.Object3D): Promise<ArrayBuffer> {
+const mirrorMaterial = new THREE.MeshStandardMaterial({ name: 'mirrorGlass', color: 0xffffff, metalness: 1, roughness: 0.02 });
+
+/** Czy bryła i wszyscy jej rodzice są widoczni. */
+const shown = (o: THREE.Object3D) => {
+  for (let p: THREE.Object3D | null = o; p; p = p.parent) if (!p.visible) return false;
+  return true;
+};
+
+/**
+ * Scena do Blendera: bryły do wypalenia + otoczenie (`env:*`) tylko jako przesłona nieba.
+ * `full` (panoramy 360°): wszystko, co widać – też drzwi, szkło, zasłony, rośliny i lustra (jako lustrzany metal).
+ */
+export async function exportBakeScene(roots: THREE.Object3D[], environment: THREE.Object3D, full = false): Promise<ArrayBuffer> {
   const out = new THREE.Scene();
-  const add = (o: THREE.Mesh, prefix: string) => {
-    const copy = new THREE.Mesh(o.geometry, o.material);
+  const add = (o: THREE.Mesh, prefix: string, material = o.material) => {
+    const copy = new THREE.Mesh(o.geometry, material);
     copy.name = prefix + o.name;
     o.updateWorldMatrix(true, false);
     copy.applyMatrix4(o.matrixWorld);
     out.add(copy);
   };
-  for (const root of roots) root.traverse((o) => isBakeable(o) && add(o, ''));
+  for (const root of roots)
+    root.traverse((o) => {
+      if (!full) return void (isBakeable(o) && add(o, ''));
+      if (!(o instanceof THREE.Mesh) || !shown(o)) return;
+      if ('isReflector' in o) add(o, 'mirror:', mirrorMaterial);
+      else if (o.material instanceof THREE.MeshStandardMaterial) add(o, '');
+    });
   environment.traverse((o) => o instanceof THREE.Mesh && add(o, 'env:'));
   return (await new GLTFExporter().parseAsync(out, { binary: true })) as ArrayBuffer;
 }
