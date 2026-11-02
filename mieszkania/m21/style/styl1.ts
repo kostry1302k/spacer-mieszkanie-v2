@@ -81,7 +81,7 @@ export const styl1Furniture: FurnitureItem[] = [
 
   // ── Ściana TV: panele z orzecha na całą wysokość, otwarta podświetlana nisza, szafka RTV lewitująca 15 cm ──
   { id: 'tvWall', type: 'wallPanel', x: 326.7, y: 705.3, facing: '-x', params: { w: 330.6, h: CEIL, t: 2, mat: 'walnut' } },
-  { id: 'nicheBack', type: 'wallPanel', x: 325.4, y: 572, z: 25, facing: '-x', params: { w: 60, h: 200, t: 0.6, mat: 'travertine' } },
+  { id: 'nicheBack', type: 'wallPanel', x: 325.3, y: 572, z: 25, facing: '-x', params: { w: 60, h: 200, t: 0.6, mat: 'travertine' } },
   { id: 'nicheSideN', type: 'block', x: 313.2, y: 541, z: 25, facing: '-x', params: { w: 2, d: 25, h: 200 } },
   { id: 'nicheSideS', type: 'block', x: 313.2, y: 603, z: 25, facing: '-x', params: { w: 2, d: 25, h: 200 } },
   ...[25, 75, 125, 175, 223].map((z, i): FurnitureItem => ({ id: `nicheShelf${i}`, type: 'block', x: 313.2, y: 572, z, facing: '-x', params: { w: 60, d: 25, h: 2 } })),
@@ -155,7 +155,7 @@ export const styl1Furniture: FurnitureItem[] = [
 
   // ── Łazienka: ryflowane płytki „glina” do 120 (nad wanną do sufitu), wanna z szybą, blat z trawertynu nad pralką ──
   { id: 'clayL', type: 'wallPanel', x: 339.5, y: 182.2, facing: '+x', params: { w: 92.4, h: 120, t: 0.6, mat: 'clayTiles' } },
-  { id: 'clayShaftN', type: 'wallPanel', x: 360.7, y: 228.7, facing: '+y', params: { w: 43, h: 120, t: 0.6, mat: 'clayTiles' } },
+  { id: 'clayShaftN', type: 'wallPanel', x: 360.7, y: 228.1, facing: '-y', params: { w: 43, h: 120, t: 0.6, mat: 'clayTiles' } },
   { id: 'clayShaftE', type: 'wallPanel', x: 382.5, y: 262.25, facing: '+x', params: { w: 67.7, h: 120, t: 0.6, mat: 'clayTiles' } },
   { id: 'clayBottom', type: 'wallPanel', x: 468.6, y: 295.8, facing: '-y', params: { w: 172.8, h: 120, t: 0.6, mat: 'clayTiles' } },
   { id: 'clayTopL', type: 'wallPanel', x: 391.7, y: 136.3, facing: '+y', params: { w: 105, h: 120, t: 0.6, mat: 'clayTiles' } },

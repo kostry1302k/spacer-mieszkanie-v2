@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Apartment, Variant } from '../data/types';
+import type { Apartment, Fixture, Variant } from '../data/types';
 import type { MaterialSet, SurfaceKey } from '../scene/materials';
 import { mergeStatic } from './box';
 import { wallFaces } from './walls';
@@ -13,6 +13,8 @@ export interface ApartmentModelOptions {
   /** Drzwi wewnętrzne są tylko w wykończeniach; w stanie surowym same ościeża. */
   interiorDoors: boolean;
   ceilingFixture: CeilingFixture;
+  /** Grubość okładziny stylu przy osprzęcie (cm) – gniazdka i włączniki na płytkach, nie w nich. */
+  fixtureDepth?: (f: Fixture) => number;
 }
 
 export interface ApartmentModel {
@@ -58,7 +60,7 @@ export function buildApartmentModel(ap: Apartment, opts: ApartmentModelOptions, 
   const openings = buildOpenings(ap, opts, mats);
   root.add(openings.group);
   root.add(buildBalcony(ap, mats));
-  root.add(buildFixtures(ap, opts.variant, opts.ceilingFixture, mats));
+  root.add(buildFixtures(ap, opts.variant, opts.ceilingFixture, mats, opts.fixtureDepth));
 
   return {
     root,

@@ -20,7 +20,7 @@ import { wallBoxes } from './geometry/walls';
 import { DoorController } from './interaction/doors';
 import { placeFurniture, type PlacedFurniture } from './furniture/place';
 import { ModelCache } from './furniture/gltf';
-import { bulbLamps } from './geometry/fixtures';
+import { bulbLamps, coveringDepth } from './geometry/fixtures';
 import { RoomLabels } from './ui/roomLabels';
 import { RoomList } from './ui/roomList';
 import { Minimap } from './ui/minimap';
@@ -222,7 +222,11 @@ function rebuild(): void {
   const s = store.get();
   const def = MODES[loadedMode];
   const variant = variantOf(s);
-  model = buildApartmentModel(apartment, { variant, interiorDoors: def.interiorDoors, ceilingFixture: def.ceilingFixture }, materials);
+  model = buildApartmentModel(
+    apartment,
+    { variant, interiorDoors: def.interiorDoors, ceilingFixture: def.ceilingFixture, fixtureDepth: (f) => coveringDepth(f, def.furniture) },
+    materials,
+  );
   scene.add(model.root);
   doors.setLeaves(model.leaves);
   colliders = staticColliders(apartment, variant);

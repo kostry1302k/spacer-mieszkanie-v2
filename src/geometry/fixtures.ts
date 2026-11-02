@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import type { Apartment, Fixture, FixtureType, Variant } from '../data/types';
+import type { Apartment, Fixture, FixtureType, FurnitureItem, Variant } from '../data/types';
 import { inVariant } from '../core/plan';
 import { m } from '../core/units';
 import type { MaterialSet } from '../scene/materials';
@@ -35,8 +35,34 @@ export function bulbLamps(ap: Apartment, variant: Variant): Lamp[] {
 
 const FACING_ANGLE = { '+y': 0, '-y': Math.PI, '+x': Math.PI / 2, '-x': -Math.PI / 2 } as const;
 
+/**
+ * Grubość okładziny stylu (panel, płytki, boazeria – `wallPanel` i `block` przylegające do ściany) w miejscu osprzętu.
+ * Lico osprzętu montujemy na niej – inaczej ramka i okładzina leżą w jednej płaszczyźnie i migoczą (z-fighting).
+ */
+export function coveringDepth(f: Fixture, items: FurnitureItem[]): number {
+  if (f.facing === 'down') return 0;
+  const sign = f.facing[0] === '+' ? 1 : -1;
+  const alongX = f.facing[1] === 'y';
+  let depth = 0;
+  for (const i of items) {
+    if (i.type !== 'wallPanel' && i.type !== 'block') continue;
+    const p = i.params ?? {};
+    const t = Number(i.type === 'wallPanel' ? (p.t ?? 1) : (p.d ?? 50));
+    const w = Number(p.w ?? (i.type === 'wallPanel' ? 100 : 50));
+    const z0 = i.z ?? 0;
+    if (f.z < z0 || f.z > z0 + Number(p.h ?? (i.type === 'wallPanel' ? 55 : 50))) continue;
+    if ((i.facing[1] === 'y') !== alongX) continue; // okładzina równoległa do ściany z osprzętem
+    const [center, normal, wall] = alongX ? [i.x, i.y, f.y] : [i.y, i.x, f.x];
+    if (Math.abs((alongX ? f.x : f.y) - center) > w / 2) continue;
+    const back = sign * (normal - wall) - t / 2; // tył okładziny względem lica ściany (cm, + w głąb pokoju)
+    if (back < -1 || back > 1) continue; // przylega do ściany
+    depth = Math.max(depth, back + t);
+  }
+  return depth;
+}
+
 /** Lico osprzętu (cm → m): zaokrąglona ramka; włącznik z klawiszem, gniazdko z kołnierzem i otworami (`dark`). */
-function plateParts(f: Fixture): { light: THREE.BufferGeometry[]; dark: THREE.BufferGeometry[] } {
+function plateParts(f: Fixture, lift: number): { light: THREE.BufferGeometry[]; dark: THREE.BufferGeometry[] } {
   if (f.facing === 'down') throw new Error(`osprzęt ${f.id}: lico 'down' tylko dla wypustu sufitowego`);
   const [w, h, t] = PLATE[f.type as keyof typeof PLATE];
   const light: THREE.BufferGeometry[] = [new RoundedBoxGeometry(w, h, t, 3, Math.min(0.6, t / 2 - 0.01)).translate(0, 0, t / 2)];
@@ -51,13 +77,14 @@ function plateParts(f: Fixture): { light: THREE.BufferGeometry[]; dark: THREE.Bu
   const place = new THREE.Matrix4()
     .makeTranslation(m(f.x), m(f.z), m(f.y))
     .multiply(new THREE.Matrix4().makeRotationY(FACING_ANGLE[f.facing]))
-    .multiply(new THREE.Matrix4().makeScale(0.01, 0.01, 0.01));
+    .multiply(new THREE.Matrix4().makeScale(0.01, 0.01, 0.01))
+    .multiply(new THREE.Matrix4().makeTranslation(0, 0, lift));
   for (const g of [...light, ...dark]) g.applyMatrix4(place);
   return { light, dark };
 }
 
 /** Grzejniki płytowe i osprzęt elektryczny (orientacyjny) stanu surowego. */
-export function buildFixtures(ap: Apartment, variant: Variant, ceiling: CeilingFixture, mats: MaterialSet): THREE.Group {
+export function buildFixtures(ap: Apartment, variant: Variant, ceiling: CeilingFixture, mats: MaterialSet, depthOf: (f: Fixture) => number = () => 0): THREE.Group {
   const group = new THREE.Group();
   group.name = 'fixtures';
   const plates: PlanBox[] = [];
@@ -71,7 +98,7 @@ export function buildFixtures(ap: Apartment, variant: Variant, ceiling: CeilingF
       cables.push({ x0: f.x - 0.4, x1: f.x + 0.4, y0: f.y - 0.4, y1: f.y + 0.4, z0: f.z - CABLE, z1: f.z });
       plates.push({ x0: f.x - 2, x1: f.x + 2, y0: f.y - 2, y1: f.y + 2, z0: f.z - CABLE - HOLDER, z1: f.z - CABLE });
     } else {
-      const { light, dark } = plateParts(f);
+      const { light, dark } = plateParts(f, depthOf(f));
       faces.push(...light);
       holes.push(...dark);
     }
