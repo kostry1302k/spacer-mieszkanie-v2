@@ -10,7 +10,8 @@
     "preview": "vite preview --host",
     "check:data": "node scripts/check-data.ts",
     "assets": "node scripts/fetch-assets.ts",
-    "bake": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P scripts/bake.py --"
+    "bake": "/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P scripts/bake.py --",
+    "panoramas": "node scripts/panoramas.ts"
   },
   "dependencies": {
     "three": "0.186.1"

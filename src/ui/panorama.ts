@@ -12,7 +12,6 @@ export class PanoramaViewer {
   private lat = 0;
   private drag: { x: number; y: number } | null = null;
   private pinch = 0;
-  private request = 0;
 
   constructor(private readonly onClose: () => void) {
     // Kula oglądana od środka; odbicie w x, żeby obraz nie był lustrzany. Środek tekstury wypada wtedy na −x.
@@ -60,27 +59,30 @@ export class PanoramaViewer {
     return !this.element.hidden;
   }
 
-  async open(url: string, caption: string): Promise<void> {
-    const request = ++this.request;
-    this.element.hidden = false;
-    document.body.classList.add('pano-on');
-    this.caption.textContent = `${caption} · wczytywanie…`;
-    this.lon = Math.PI;
-    this.lat = 0;
-    this.camera.fov = 75;
+  /** Wczytuje obraz zawczasu – panorama pokazuje się dopiero gotowa (bez czarnej kuli). */
+  async load(url: string): Promise<THREE.Texture> {
     const texture = await new THREE.TextureLoader().loadAsync(url);
-    if (request !== this.request || !this.active) return texture.dispose();
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 8;
+    return texture;
+  }
+
+  /** `turn`: o ile radianów od środka panoramy patrzeć na start (dodatnio – w lewo), np. tam, gdzie patrzył gracz. */
+  show(texture: THREE.Texture, caption: string, turn = 0): void {
     this.texture?.dispose();
     this.texture = texture;
     this.material.map = texture;
     this.material.needsUpdate = true;
+    this.lon = Math.PI - turn;
+    this.lat = 0;
+    this.camera.fov = 75;
+    this.camera.updateProjectionMatrix();
     this.caption.textContent = `${caption} · przeciągnij, aby się rozejrzeć`;
+    this.element.hidden = false;
+    document.body.classList.add('pano-on');
   }
 
   close(): void {
-    this.request++;
     this.element.hidden = true;
     document.body.classList.remove('pano-on');
     this.material.map = null;

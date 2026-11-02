@@ -14,6 +14,7 @@ const COLORS = {
   doorOpen: '#7fae6b',
   player: '#d9574a',
   cone: 'rgba(217, 87, 74, 0.25)',
+  pano: '#c8962e',
 };
 
 /** Minimapa rzutu (północ u góry, jak na rzucie dewelopera) z pozycją i kierunkiem patrzenia. */
@@ -69,7 +70,8 @@ export class Minimap {
     ctx.restore();
   }
 
-  draw(player: { x: number; y: number; yaw: number }, doors: { corners: [number, number][]; open: boolean }[]): void {
+  /** `panoramas`: miejsca zdjęć 360° (cm) – złote kółka z kropką. */
+  draw(player: { x: number; y: number; yaw: number }, doors: { corners: [number, number][]; open: boolean }[], panoramas: { x: number; y: number }[] = []): void {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.element.width, this.element.height);
     ctx.drawImage(this.staticLayer, 0, 0);
@@ -81,6 +83,18 @@ export class Minimap {
       d.corners.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
       ctx.closePath();
       ctx.fillStyle = d.open ? COLORS.doorOpen : COLORS.door;
+      ctx.fill();
+    }
+
+    for (const p of panoramas) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = COLORS.pano;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = COLORS.pano;
       ctx.fill();
     }
 

@@ -109,24 +109,47 @@ panoButton.className = 'pano-open';
 panoButton.textContent = '◉ Zdjęcie 360° (P)';
 panoButton.hidden = true;
 
+// Spis gotowych renderów (`<tryb>-<panorama>-<pora>`) zapisuje scripts/panoramas.ts.
+let panoReady = new Set<string>();
+fetch(`${import.meta.env.BASE_URL}pano/${siteId}/index.json`)
+  .then((r) => (r.ok ? r.json() : []), () => [])
+  .then((names: string[]) => (panoReady = new Set(names)));
+const panoKey = (p: { id: string }) => `${loadedMode}-${p.id}-${store.get().time}`;
+
 function currentPanorama() {
-  const room = apartment.rooms.find((r) => !r.outdoor && pointInPolygon(player.x, player.y, r.polygon));
-  const key = `${loadedMode}-${store.get().time}`;
-  return room && panoramas.find((p) => p.room === room.id && p.renders.includes(key));
+  const room = apartment.rooms.find((r) => pointInPolygon(player.x, player.y, r.polygon));
+  // Najbliższa gotowa panorama w pokoju, w którym stoi gracz.
+  const near = (p: { x: number; y: number }) => Math.hypot(p.x - player.x, p.y - player.y);
+  return panoramas.filter((p) => p.room === room?.id && panoReady.has(panoKey(p))).sort((a, b) => near(a) - near(b))[0];
 }
 
-function openPanorama(): void {
+let panoLoading = false;
+
+async function openPanorama(): Promise<void> {
   const p = currentPanorama();
-  if (!p || store.get().view !== 'walk') return;
-  desktop.unlock();
-  desktop.enabled = touch.enabled = false;
-  hud.hideAll();
-  sidebar.hidden = true;
+  if (!p || store.get().view !== 'walk' || pano.active || panoLoading) return;
+  panoLoading = true;
+  hud.setHint('Wczytywanie zdjęcia 360°…');
+  const texture = await pano.load(`${import.meta.env.BASE_URL}pano/${siteId}/${panoKey(p)}.jpg`);
+  panoLoading = false;
+  hud.setHint(null);
   const room = apartment.rooms.find((r) => r.id === p.room)!;
-  void pano.open(`${import.meta.env.BASE_URL}pano/${siteId}/${loadedMode}-${p.id}-${store.get().time}.jpg`, `${room.name} – ${MODES[loadedMode!].name}`);
+  // Panorama otwiera się w kierunku, w który patrzy gracz (yaw w rzucie rośnie w lewo, jak obrót w panoramie).
+  const turn = player.yaw - THREE.MathUtils.degToRad(p.yaw);
+  void hud.transition(() => {
+    desktop.unlock();
+    desktop.enabled = touch.enabled = false;
+    hud.hideAll();
+    sidebar.hidden = true;
+    pano.show(texture, `${room.name} – ${MODES[loadedMode!].name}`, turn);
+  });
 }
-panoButton.addEventListener('click', openPanorama);
-window.addEventListener('keydown', (e) => e.code === 'KeyP' && !pano.active && openPanorama());
+
+/** Punkty panoram dostępnych dla bieżącego stylu i pory dnia – na minimapę. */
+const panoMarkers = () => panoramas.filter((p) => panoReady.has(panoKey(p)));
+
+panoButton.addEventListener('click', () => void openPanorama());
+window.addEventListener('keydown', (e) => e.code === 'KeyP' && void openPanorama());
 
 sidebar.append(roomList.element, panoButton, minimap.element);
 hudRoot.appendChild(sidebar);
@@ -380,7 +403,7 @@ renderer.setAnimationLoop(() => {
     hoveredDoor = model && (walkActive() || isDebug) ? doors.pick(walkCamera, model.occluders) : null;
     const action = hoveredDoor && (doors.isOpen(hoveredDoor) ? 'zamknij' : 'otwórz');
     hud.setHint(action && walkActive() ? (isTouch ? `Dotknij drzwi – ${action}` : `E / klik – ${action} drzwi`) : null);
-    minimap.draw(player, doors.outlines());
+    minimap.draw(player, doors.outlines(), panoMarkers());
     const hasPano = Boolean(currentPanorama());
     if (panoButton.hidden === hasPano) panoButton.hidden = !hasPano;
   } else {

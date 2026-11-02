@@ -11,7 +11,7 @@ export interface Site {
   apartment: Apartment;
   /** Tryby w kolejności przycisków; pierwszy jest domyślny. */
   modes: ModeDefinition[];
-  /** Panoramy 360° z Blendera: public/pano/<id>/<tryb>-<panorama>-<pora>.jpg (render: scripts/bake.py --panorama). */
+  /** Panoramy 360° z Blendera: public/pano/<id>/<tryb>-<panorama>-<pora>.jpg (render: scripts/panoramas.ts). */
   panoramas?: Panorama[];
 }
 
@@ -25,8 +25,12 @@ export interface Panorama {
   z: number;
   /** Kierunek środka panoramy (stopnie, 0 = +Y w rzucie). */
   yaw: number;
-  /** Gotowe rendery: `<tryb>-<pora>`. */
-  renders: string[];
+  /** Ekspozycja w EV (jak w aparacie): pokoje od północy jaśniej, balkon ciemniej. */
+  exposure: number;
+  /** 'all' – na zdjęciu dziennym świecą wszystkie lampy (pomieszczenia bez okna, np. hol). */
+  lamps?: 'all';
+  /** Mnożnik mocy lamp na zdjęciu (domyślnie 1) – łazienka, WC i hol bez okna wychodziły prześwietlone. */
+  lampGain?: number;
 }
 
 export const { id: siteId, apartment, badge } = site;

@@ -22,6 +22,8 @@ args.add_argument('--samples', type=int, default=256)
 args.add_argument('--preview', action='store_true', help='zamiast wypalania: render widoku z kamery (<out>-preview.png)')
 args.add_argument('--panorama', action='store_true', help='zamiast wypalania: panorama 360° z kamery (<out>.jpg, szerokość --size)')
 args.add_argument('--camera', default='1.6,1.65,1.6,0', help='x,y,z (m, three.js), kierunek patrzenia w stopniach (0 = +z)')
+args.add_argument('--lamps-from', help='lampy z innego pliku świateł (np. wieczornego) – pomieszczenia bez okna na zdjęciach dziennych')
+args.add_argument('--lamp-gain', type=float, default=1, help='mnożnik mocy lamp (pomieszczenia oświetlone tylko lampami)')
 args.add_argument('--exposure', type=float, default=4.5, help='ekspozycja wnętrza w EV (jak w aparacie): podgląd i jasność lightmapy w spacerze')
 a = args.parse_args(sys.argv[sys.argv.index('--') + 1:])
 
@@ -32,6 +34,8 @@ os.makedirs(os.path.dirname(a.out), exist_ok=True)
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=a.scene)
 lights = json.load(open(a.lights))
+if a.lamps_from:
+    lights['lamps'] = json.load(open(a.lamps_from))['lamps']
 scene = bpy.context.scene
 stamp('import')
 
@@ -99,7 +103,7 @@ if lights.get('sun'):
 # ── Lampy: punktowe; three.js (cd, y w górę) → Blender (W, z w górę) ──
 for i, lamp in enumerate(lights['lamps']):
     data = bpy.data.lights.new(f'lamp{i}', type='POINT')
-    data.energy = 4 * math.pi * lamp['candela'] * 2 ** -a.exposure  # lampy wyglądają jak w spacerze mimo rozjaśnienia wnętrza
+    data.energy = 4 * math.pi * lamp['candela'] * 2 ** -a.exposure * a.lamp_gain  # lampy wyglądają jak w spacerze mimo rozjaśnienia wnętrza
     data.shadow_soft_size = 0.04
     hexc = lamp['color']
     data.color = tuple(srgb_to_linear(((hexc >> s) & 255) / 255) for s in (16, 8, 0))
