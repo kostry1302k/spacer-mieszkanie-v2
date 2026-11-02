@@ -33,7 +33,7 @@ const REPLACED = new Set([
   'stoolA', 'stoolB', 'tvWall', 'nicheBack', 'nicheSideN', 'nicheSideS', 'nicheLed', 'tv', 'tvCabinet',
   'sofa', 'coffeeTable', 'sideTable', 'floorLamp', 'olive', 'livingRug',
   'diningTable', 'chairN', 'chairW', 'chairS', 'diningDome', 'hallRunner',
-  'bedWardrobe', 'armchair', 'armchairTable',
+  'bedWardrobe',
   'accentWall', 'deskTop', 'deskDrawers', 'deskLeg', 'deskChair', 'deskShelf1', 'deskShelf2', 'deskShelf3', 'deskLed', 'daybed', 'rollerBlind',
 ]);
 
@@ -60,8 +60,8 @@ export const styl2Furniture: FurnitureItem[] = [
   { id: 'sofa', type: 'sofa', x: 47.5, y: 695, facing: '+x', params: { w: 270, d: 95, accentA: 'cushionOat', accentB: 'cushionGreen' } },
   { id: 'chaise', type: 'block', x: 125, y: 607.5, facing: '+x', params: { w: 95, d: 60, h: 44, r: 6, mat: 'boucle', collide: true } },
   { id: 'coffeeTable', type: 'coffeeTable', x: 190, y: 712, facing: '+x', params: { w: 90, h: 36, shape: 'round', mat: 'walnut' } },
-  { id: 'sideTable', type: 'sideTable', x: 65, y: 535, facing: '+x', params: { r: 20, h: 50, mat: 'travertine' } },
-  { id: 'floorLamp', type: 'floorLampShade', x: 20, y: 540, facing: '+x', params: { h: 165, cd: 25, stem: 'brass' } },
+  { id: 'sideTable', type: 'sideTable', x: 70, y: 535, facing: '+x', params: { r: 20, h: 50, mat: 'travertine' } },
+  { id: 'floorLamp', type: 'floorLampShade', x: 24, y: 536, facing: '+x', params: { h: 165, cd: 25, stem: 'brass' } },
   { id: 'olive', type: 'model', x: 35, y: 852, facing: '+x', params: { file: 'potted_plant_04.glb', height: 120, w: 45, d: 45 } },
   { id: 'livingRug', type: 'rug', x: 175, y: 712, facing: '+x', params: { w: 240, d: 170, mat: 'rugJute' } },
 

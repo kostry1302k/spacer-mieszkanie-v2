@@ -31,6 +31,8 @@ export interface Panorama {
   lamps?: 'all';
   /** Mnożnik mocy lamp na zdjęciu (domyślnie 1) – łazienka, WC i hol bez okna wychodziły prześwietlone. */
   lampGain?: number;
+  /** Światło wypełniające (domyślnie 45, jak lampa fotografa odbita od sufitu); 0 – bez. */
+  fill?: number;
 }
 
 export const { id: siteId, apartment, badge } = site;

@@ -26,6 +26,7 @@ export const styl1Materials: Record<SurfaceKey, MaterialSpec> = {
   threshold: oakHerringbone, // jedna podłoga, bez progów
   concrete: { texture: 'smokedOak', tint: 0xb08d6c, roughness: 0.8 }, // balkon: deska tarasowa
   doorInterior: { color: 0xece4d8, roughness: 0.6 }, // drzwi bezprzylgowe w kolorze ściany
+  handle: { color: 0xb8925a, roughness: 0.3, metalness: 1 }, // mosiężne klamki
   doorEntrance: { texture: 'walnut', tint: 0xf5c8a0, roughness: 0.6 }, // od wewnątrz orzech
   bulb: { color: 0xfff6e8, roughness: 0.3 }, // nieużywane – lampy są meblami
 };
@@ -91,8 +92,8 @@ export const styl1Furniture: FurnitureItem[] = [
   // ── Salon: sofa bouclé pod lewą ścianą, stolik z orzecha, trawertynowy stolik boczny, juta, oliwka ──
   { id: 'sofa', type: 'sofa', x: 47.5, y: 685, facing: '+x', params: { w: 240, d: 95, accentA: 'cushionOat', accentB: 'cushionGreen' } },
   { id: 'coffeeTable', type: 'coffeeTable', x: 185, y: 685, facing: '+x', params: { w: 90, h: 36, shape: 'round', mat: 'walnut' } },
-  { id: 'sideTable', type: 'sideTable', x: 60, y: 545, facing: '+x', params: { r: 20, h: 50, mat: 'travertine' } },
-  { id: 'floorLamp', type: 'floorLampShade', x: 22, y: 540, facing: '+x', params: { h: 165, cd: 25, stem: 'brass' } },
+  { id: 'sideTable', type: 'sideTable', x: 70, y: 545, facing: '+x', params: { r: 20, h: 50, mat: 'travertine' } },
+  { id: 'floorLamp', type: 'floorLampShade', x: 24, y: 540, facing: '+x', params: { h: 165, cd: 25, stem: 'brass' } },
   { id: 'olive', type: 'model', x: 40, y: 838, facing: '+x', params: { file: 'potted_plant_04.glb', height: 150, w: 50, d: 50 } },
   { id: 'livingRug', type: 'rug', x: 130, y: 685, facing: '+x', params: { w: 280, d: 200, mat: 'rugJute' } },
   { id: 'curtainL', type: 'curtain', x: 39, y: 862, facing: '-y', params: { w: 70, mat: 'curtainLinen', ceiling: CEIL } },
@@ -119,6 +120,7 @@ export const styl1Furniture: FurnitureItem[] = [
   { id: 'hallRunner', type: 'rug', x: 640, y: 62, facing: '+y', params: { w: 420, d: 75, mat: 'rugJute' } },
 
   // ── Sypialnia: łóżko 160 × 200 przy prawej ścianie, boiserie z orzecha, pas trawertynu, ryflowane panele do sufitu ──
+  // (fotel z moodboardu pominięty – między szafą a oknem nie da się na nim usiąść)
   { id: 'boiserie', type: 'wallPanel', x: 1034.9, y: -178, facing: '-x', params: { w: 308, h: 105, t: 2, mat: 'walnut' } },
   { id: 'bedBand', type: 'wallPanel', x: 1035, y: -178, z: 105, facing: '-x', params: { w: 308, h: 10, t: 1.8, mat: 'travertine' } },
   { id: 'bedPanels', type: 'wallPanel', x: 1035.5, y: -178, z: 115, facing: '-x', params: { w: 308, h: CEIL - 115, t: 0.8, mat: 'limeFront' } },
@@ -131,8 +133,6 @@ export const styl1Furniture: FurnitureItem[] = [
   { id: 'bench', type: 'block', x: 803, y: -182.9, facing: '-x', params: { w: 100, d: 40, h: 45, r: 3, mat: 'boucle', collide: true } },
   { id: 'bedRug', type: 'rug', x: 900, y: -182.9, facing: '-x', params: { w: 280, d: 230 } },
   { id: 'bedWardrobe', type: 'wardrobe', x: 644.1, y: -124.1, facing: '+x', params: { w: 230, d: 60, h: CEIL, doors: 4, front: 'limeFront' } },
-  { id: 'armchair', type: 'sofa', x: 660, y: -290, facing: '+y', params: { w: 85, d: 80, seats: 1, fabric: 'boucle', accentA: 'cushionOat', accentB: 'boucle' } },
-  { id: 'armchairTable', type: 'sideTable', x: 728, y: -305, facing: '+y', params: { r: 20, h: 50, mat: 'travertine' } },
   { id: 'bedLight', type: 'downlight', x: 830, y: -182, facing: '+y', params: { cd: 28 } },
   { id: 'bedCurtainL', type: 'curtain', x: 636, y: -328, facing: '+y', params: { w: 40, mat: 'curtainLinen', ceiling: CEIL } },
   { id: 'bedSheer', type: 'curtain', x: 727, y: -333, facing: '+y', params: { w: 210, mat: 'curtainSheer', ceiling: CEIL, depth: 6, period: 9 } },
@@ -145,8 +145,8 @@ export const styl1Furniture: FurnitureItem[] = [
   { id: 'deskLeg', type: 'block', x: 575.9, y: -133.7, facing: '-x', params: { w: 3, d: 58, h: 72 } },
   { id: 'deskChair', type: 'diningChair', x: 520, y: -201, facing: '+x', params: { seat: 'boucle' } },
   { id: 'deskShelf1', type: 'wallShelf', x: 593.9, y: -201.2, z: 115, facing: '-x', params: { w: 120, d: 22, mat: 'walnut', decor: false } },
-  { id: 'deskShelf2', type: 'wallShelf', x: 593.9, y: -201.2, z: 150, facing: '-x', params: { w: 120, d: 22, mat: 'walnut' } },
-  { id: 'deskShelf3', type: 'wallShelf', x: 593.9, y: -201.2, z: 185, facing: '-x', params: { w: 120, d: 22, mat: 'walnut', decor: false } },
+  { id: 'deskShelf2', type: 'wallShelf', x: 593.9, y: -201.2, z: 150, facing: '-x', params: { w: 120, d: 22, mat: 'walnut', decor: false } },
+  { id: 'deskShelf3', type: 'wallShelf', x: 593.9, y: -201.2, z: 185, facing: '-x', params: { w: 120, d: 22, mat: 'walnut' } }, // ramka i książki tylko na górnej – niżej nie zmieściłyby się pod półką
   { id: 'deskLed', type: 'block', x: 590, y: -201.2, z: 114.4, facing: '-x', params: { w: 116, d: 1, h: 0.6, mat: 'led' } },
   { id: 'daybed', type: 'bed', x: 397.5, y: -222, facing: '+y', params: { w: 90, l: 190, headH: 70, frame: 'boucle', upholstered: true, pillow: 'cushionGreen' } },
   { id: 'officeWardrobe', type: 'wardrobe', x: 410.5, y: -41.7, facing: '-y', params: { w: 122, d: 65, h: CEIL, doors: 2 } },

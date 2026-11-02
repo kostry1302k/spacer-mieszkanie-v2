@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { Apartment, Door, DoorKind, Variant } from '../data/types';
 import { wallAxis, wallsFor } from '../core/plan';
 import { m } from '../core/units';
@@ -63,6 +64,34 @@ export interface OpeningsOptions {
   interiorDoors: boolean;
 }
 
+/**
+ * Klamka po obu stronach skrzydła (cm → m): rozeta, szyjka i dźwignia w stronę środka skrzydła (drzwi)
+ * albo w dół (okna, drzwi balkonowe). `a` – położenie wzdłuż ściany, `n` – środek grubości skrzydła.
+ */
+function handle(wall: Parameters<typeof alongWall>[0], a: number, n: number, thickness: number, toCenter: 1 | -1, down: boolean): THREE.BufferGeometry[] {
+  const Z = 104;
+  const alongX = wallAxis(wall) === 'x';
+  // Układ lokalny: x wzdłuż ściany, y w górę, z w poprzek; ściana wzdłuż y – obrót o 90° (lokalne x → −Y rzutu).
+  const dir = alongX ? toCenter : -toCenter;
+  const parts: THREE.BufferGeometry[] = [];
+  for (const f of [1, -1]) {
+    const face = f * (thickness / 2);
+    parts.push(new THREE.CylinderGeometry(2.6, 2.6, 0.8, 32).rotateX(Math.PI / 2).translate(0, 0, face + f * 0.4)); // rozeta
+    parts.push(new THREE.CylinderGeometry(0.9, 0.9, 5, 16).rotateX(Math.PI / 2).translate(0, 0, face + f * 3.3)); // szyjka
+    parts.push(
+      down
+        ? new RoundedBoxGeometry(1.8, 11, 1.6, 3, 0.7).translate(0, -5, face + f * 5.4)
+        : new RoundedBoxGeometry(12, 1.8, 1.8, 3, 0.8).translate(dir * 5.5, 0, face + f * 5.4),
+    ); // dźwignia
+  }
+  const at = alongWall(wall, a, a, n, n, Z, Z);
+  const place = new THREE.Matrix4()
+    .makeTranslation(m(at.x0), m(Z), m(at.y0))
+    .multiply(new THREE.Matrix4().makeRotationY(alongX ? 0 : Math.PI / 2))
+    .multiply(new THREE.Matrix4().makeScale(0.01, 0.01, 0.01));
+  return parts.map((g) => g.applyMatrix4(place));
+}
+
 export function buildOpenings(ap: Apartment, opts: OpeningsOptions, mats: MaterialSet): { group: THREE.Group; leaves: DoorLeaf[] } {
   const group = new THREE.Group();
   group.name = 'openings';
@@ -123,15 +152,15 @@ export function buildOpenings(ap: Apartment, opts: OpeningsOptions, mats: Materi
     const leafParts: [SurfaceKey, PlanBox][] = style.glazed
       ? glazedPanel(leafA0, leafA1)
       : [[style.leaf, box(leafA0, leafA1, leafN, zBottom, zTop)]];
-    const handleN: [number, number] = [plane + s * 6, plane - s * (style.leafThickness + 6)];
-    leafParts.push(['metal', box(handleA - 1.5, handleA + 1.5, handleN, 103, 106)]);
+    const handleGeos = handle(wall, handleA, plane - (s * style.leafThickness) / 2, style.leafThickness, (-d) as 1 | -1, style.glazed);
 
     const pivotPos = alongWall(wall, hingeA, hingeA, plane, plane, 0, 0);
     const pivot = new THREE.Group();
     pivot.name = `door:${door.id}`;
     pivot.position.set(m(pivotPos.x0), 0, m(pivotPos.y0));
-    for (const key of new Set(leafParts.map(([k]) => k))) {
-      const geo = mergeStatic(leafParts.filter(([k]) => k === key).map(([, b]) => boxGeometry(b)));
+    const handleKey: SurfaceKey = style.glazed ? 'metal' : 'handle';
+    for (const key of new Set([...leafParts.map(([k]) => k), handleKey])) {
+      const geo = mergeStatic([...leafParts.filter(([k]) => k === key).map(([, b]) => boxGeometry(b)), ...(key === handleKey ? handleGeos : [])]);
       geo.translate(-pivot.position.x, 0, -pivot.position.z);
       const mesh = new THREE.Mesh(geo, mats[key]);
       mesh.castShadow = key !== 'glass';

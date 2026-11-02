@@ -33,6 +33,8 @@ for (const style of styles) {
     args.push('--size', size, '--samples', samples, '--camera', `${p.x / 100},${p.z / 100},${p.y / 100},${p.yaw}`, '--exposure', String(p.exposure));
     if (p.lamps === 'all') args.push('--lamps-from', `bake-work/${style}-evening.json`);
     if (p.lampGain) args.push('--lamp-gain', String(p.lampGain));
+    // Wnętrze równo doświetlone i łagodna krzywa kontrastu – klient ma zobaczyć pokój, nie głębokie cienie.
+    args.push('--look', 'AgX - Low Contrast', '--fill', String(p.fill ?? 45));
     const started = Date.now();
     const run = spawnSync(BLENDER, args, { encoding: 'utf8' });
     if (run.status !== 0) throw new Error(`${name}: Blender zakończył się błędem\n${run.stderr.slice(-2000)}`);

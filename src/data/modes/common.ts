@@ -9,6 +9,7 @@ export const COMMON = {
   glass: { color: 0xc9dbe6, roughness: 0.05, opacity: 0.12 },
   doorEntrance: { color: 0x56534f, roughness: 0.45, metalness: 0.3 },
   metal: { color: 0x2a2b2d, roughness: 0.4, metalness: 0.7 },
+  handle: { color: 0x2a2b2d, roughness: 0.3, metalness: 0.8 }, // klamki drzwi
   radiator: { color: 0xf1f1ee, roughness: 0.35 },
   fixture: { color: 0xf4f3ef, roughness: 0.4 },
   cable: { color: 0x2d2d2d, roughness: 0.6 },

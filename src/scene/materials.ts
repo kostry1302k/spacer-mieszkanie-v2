@@ -17,6 +17,7 @@ export type SurfaceKey =
   | 'doorEntrance'
   | 'doorInterior'
   | 'metal'
+  | 'handle'
   | 'radiator'
   | 'fixture'
   | 'cable'

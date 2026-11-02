@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { Apartment, Fixture, FixtureType, Variant } from '../data/types';
 import { inVariant } from '../core/plan';
 import { m } from '../core/units';
@@ -32,17 +33,27 @@ export function bulbLamps(ap: Apartment, variant: Variant): Lamp[] {
     .map((f) => ({ x: f.x, y: f.y, z: f.z - CABLE - HOLDER - BULB_RADIUS, intensity: BULB_CD, color: BULB_COLOR }));
 }
 
-function plateBox(f: Fixture): PlanBox {
+const FACING_ANGLE = { '+y': 0, '-y': Math.PI, '+x': Math.PI / 2, '-x': -Math.PI / 2 } as const;
+
+/** Lico osprzętu (cm → m): zaokrąglona ramka; włącznik z klawiszem, gniazdko z kołnierzem i otworami (`dark`). */
+function plateParts(f: Fixture): { light: THREE.BufferGeometry[]; dark: THREE.BufferGeometry[] } {
+  if (f.facing === 'down') throw new Error(`osprzęt ${f.id}: lico 'down' tylko dla wypustu sufitowego`);
   const [w, h, t] = PLATE[f.type as keyof typeof PLATE];
-  const z0 = f.z - h / 2;
-  const z1 = f.z + h / 2;
-  switch (f.facing) {
-    case '+y': return { x0: f.x - w / 2, x1: f.x + w / 2, y0: f.y, y1: f.y + t, z0, z1 };
-    case '-y': return { x0: f.x - w / 2, x1: f.x + w / 2, y0: f.y - t, y1: f.y, z0, z1 };
-    case '+x': return { x0: f.x, x1: f.x + t, y0: f.y - w / 2, y1: f.y + w / 2, z0, z1 };
-    case '-x': return { x0: f.x - t, x1: f.x, y0: f.y - w / 2, y1: f.y + w / 2, z0, z1 };
-    case 'down': throw new Error(`osprzęt ${f.id}: lico 'down' tylko dla wypustu sufitowego`);
+  const light: THREE.BufferGeometry[] = [new RoundedBoxGeometry(w, h, t, 3, Math.min(0.6, t / 2 - 0.01)).translate(0, 0, t / 2)];
+  const dark: THREE.BufferGeometry[] = [];
+  if (f.type === 'switch') light.push(new RoundedBoxGeometry(5, 5, 0.6, 2, 0.25).translate(0, 0, t + 0.1));
+  if (f.type === 'socket' || f.type === 'socketDouble') {
+    for (const cx of f.type === 'socket' ? [0] : [-3.6, 3.6]) {
+      light.push(new THREE.CylinderGeometry(2.3, 2.3, 0.3, 32).rotateX(Math.PI / 2).translate(cx, 0, t + 0.1));
+      for (const hx of [-0.95, 0.95]) dark.push(new THREE.CylinderGeometry(0.28, 0.28, 0.2, 12).rotateX(Math.PI / 2).translate(cx + hx, 0, t + 0.26));
+    }
   }
+  const place = new THREE.Matrix4()
+    .makeTranslation(m(f.x), m(f.z), m(f.y))
+    .multiply(new THREE.Matrix4().makeRotationY(FACING_ANGLE[f.facing]))
+    .multiply(new THREE.Matrix4().makeScale(0.01, 0.01, 0.01));
+  for (const g of [...light, ...dark]) g.applyMatrix4(place);
+  return { light, dark };
 }
 
 /** Grzejniki płytowe i osprzęt elektryczny (orientacyjny) stanu surowego. */
@@ -51,6 +62,8 @@ export function buildFixtures(ap: Apartment, variant: Variant, ceiling: CeilingF
   group.name = 'fixtures';
   const plates: PlanBox[] = [];
   const cables: PlanBox[] = [];
+  const faces: THREE.BufferGeometry[] = [];
+  const holes: THREE.BufferGeometry[] = [];
 
   for (const f of ap.fixtures.filter((fx) => inVariant(fx, variant))) {
     if (f.type === 'ceilingOutlet' && ceiling === 'none') continue;
@@ -58,7 +71,9 @@ export function buildFixtures(ap: Apartment, variant: Variant, ceiling: CeilingF
       cables.push({ x0: f.x - 0.4, x1: f.x + 0.4, y0: f.y - 0.4, y1: f.y + 0.4, z0: f.z - CABLE, z1: f.z });
       plates.push({ x0: f.x - 2, x1: f.x + 2, y0: f.y - 2, y1: f.y + 2, z0: f.z - CABLE - HOLDER, z1: f.z - CABLE });
     } else {
-      plates.push(plateBox(f));
+      const { light, dark } = plateParts(f);
+      faces.push(...light);
+      holes.push(...dark);
     }
   }
 
@@ -68,8 +83,8 @@ export function buildFixtures(ap: Apartment, variant: Variant, ceiling: CeilingF
       : [];
   const radiators = ap.radiators.map((r) => boxGeometry({ x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1, z0: r.bottom, z1: r.top }));
   const parts: [keyof MaterialSet, THREE.BufferGeometry[]][] = [
-    ['fixture', plates.map(boxGeometry)],
-    ['cable', cables.map(boxGeometry)],
+    ['fixture', [...plates.map(boxGeometry), ...faces]],
+    ['cable', [...cables.map(boxGeometry), ...holes]],
     ['radiator', radiators],
     ['bulb', bulbs],
   ];

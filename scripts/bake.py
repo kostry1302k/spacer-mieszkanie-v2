@@ -24,6 +24,8 @@ args.add_argument('--panorama', action='store_true', help='zamiast wypalania: pa
 args.add_argument('--camera', default='1.6,1.65,1.6,0', help='x,y,z (m, three.js), kierunek patrzenia w stopniach (0 = +z)')
 args.add_argument('--lamps-from', help='lampy z innego pliku świateł (np. wieczornego) – pomieszczenia bez okna na zdjęciach dziennych')
 args.add_argument('--lamp-gain', type=float, default=1, help='mnożnik mocy lamp (pomieszczenia oświetlone tylko lampami)')
+args.add_argument('--look', default='AgX - Base Contrast', help='krzywa kontrastu AgX (panoramy: łagodniejsza – mniej przepaleń przy oknie, jaśniejsze kąty)')
+args.add_argument('--fill', type=float, default=0, help='światło wypełniające pod sufitem nad kamerą (W przy ekspozycji 0), jak lampa fotografa odbita od sufitu')
 args.add_argument('--exposure', type=float, default=4.5, help='ekspozycja wnętrza w EV (jak w aparacie): podgląd i jasność lightmapy w spacerze')
 a = args.parse_args(sys.argv[sys.argv.index('--') + 1:])
 
@@ -122,7 +124,19 @@ if a.preview or a.panorama:
     scene.camera = cam
     scene.view_settings.view_transform = 'AgX'
     scene.view_settings.exposure = a.exposure
+    scene.view_settings.look = a.look
     scene.cycles.samples = a.samples
+    if a.fill:
+        # Niewidoczny w kadrze dysk ⌀2 m 30 cm pod sufitem, świecący w sufit – miękkie, równe doświetlenie pokoju.
+        fill = bpy.data.objects.new('fill', bpy.data.lights.new('fill', type='AREA'))
+        fill.data.shape = 'DISK'
+        fill.data.size = 2
+        fill.data.energy = a.fill * 2 ** -a.exposure
+        fill.data.color = (1.0, 0.95, 0.88)
+        fill.location = (x, -z, 2.4)
+        fill.rotation_euler = (math.pi, 0, 0)  # świeci w górę
+        fill.visible_camera = False
+        scene.collection.objects.link(fill)
     if a.panorama:
         # Panorama sferyczna (equirectangular 2:1) – środek obrazu to kierunek `yaw`; odszumianie OIDN z kolorem i normalnymi.
         cam.data.type = 'PANO'

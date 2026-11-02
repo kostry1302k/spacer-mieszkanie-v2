@@ -6,7 +6,6 @@ import type { ModeId } from './data/modes';
 import type { Room, Variant } from './data/types';
 import { buildApartmentModel, type ApartmentModel } from './geometry/apartmentModel';
 import { createRenderer, bindResize } from './scene/renderer';
-import { PostFx } from './scene/postfx';
 import { bakeLights, exportBakeScene, isBakeable, loadBake, setAmbientLight } from './scene/bake';
 import { SKY_HDRI } from './data/materials';
 import type { MaterialSet } from './scene/materials';
@@ -154,8 +153,6 @@ window.addEventListener('keydown', (e) => e.code === 'KeyP' && void openPanorama
 sidebar.append(roomList.element, panoButton, minimap.element);
 hudRoot.appendChild(sidebar);
 
-const postfx = isTouch ? null : new PostFx(renderer, scene, walkCamera); // na telefonie bez efektów – płynność ważniejsza
-
 bindResize(renderer, (w, h) => {
   walkCamera.aspect = w / h;
   // Na pionowym ekranie szerszy kąt w pionie, żeby w poziomie nie widzieć „przez dziurkę od klucza”.
@@ -163,7 +160,6 @@ bindResize(renderer, (w, h) => {
   walkCamera.updateProjectionMatrix();
   views.resize(w, h);
   labels.renderer.setSize(w, h);
-  postfx?.setSize(w, h);
 });
 
 // Materiały trybów (ładowane przy pierwszym użyciu) i niebo.
@@ -337,7 +333,6 @@ void loadMode(store.get().mode);
 const adaptive = new AdaptiveQuality(
   renderer,
   () => materials && Object.values(materials).forEach((mat) => (mat.needsUpdate = true)),
-  postfx ? [() => (postfx.enabled = false)] : [], // za wolno – najpierw wyłączamy efekty
 );
 const tickFps = isDebug ? createFpsMeter() : null;
 if (isDebug) {
@@ -378,11 +373,10 @@ if (isDebug) {
     await upload(`${loadedMode}-${time}.json`, JSON.stringify(lights));
     return `${loadedMode}: ${(glb.byteLength / 1e6).toFixed(1)} MB, lamp: ${lights.lamps.length}`;
   };
-  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench, postfx, exportBake, baked: () => baked } });
+  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench, exportBake, baked: () => baked } });
 }
 
-// Przy wypalonym świetle cienie w kątach są już w lightmapie – efekt GTAO zbędny.
-const renderWalk = () => (postfx?.enabled && !baked ? postfx.render(walkCamera) : renderer.render(scene, walkCamera));
+const renderWalk = () => renderer.render(scene, walkCamera);
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {

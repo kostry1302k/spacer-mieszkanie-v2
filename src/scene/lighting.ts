@@ -21,7 +21,8 @@ const PRESETS: Record<TimeOfDay, {
   background: number;
   lampsOn: boolean; // lampy sztuczne (poza tymi, które świecą zawsze – np. łazienka bez okna)
 }> = {
-  day: { exposure: 1.05, sun: 3.2, sky: 7, skyColor: 0xdde8f7, fill: 0.8, environment: 0.35, background: 1, lampsOn: false },
+  // Wyrównane: słabsze światło z okien, mocniejsze wypełnienie – przy oknie mniej przepaleń, w głębi pokoju jaśniej.
+  day: { exposure: 1.05, sun: 3.2, sky: 4.5, skyColor: 0xdde8f7, fill: 1.3, environment: 0.5, background: 1, lampsOn: false },
   evening: { exposure: 0.85, sun: 0, sky: 0.35, skyColor: 0x5d6f9c, fill: 0.15, environment: 0.04, background: 0.06, lampsOn: true },
 };
 
