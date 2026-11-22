@@ -12,7 +12,8 @@ const WAPNO = 0xf4ece0; // tint farby wapiennej → ok. #EEE7DC
 const TRAWERTYN = 0xd8c8af;
 const ZIELEN = 0x2f4a3a;
 
-const limewash: MaterialSpec = { texture: 'paint', tint: WAPNO, roughness: 0.95, normalScale: 0.35 };
+// Faktura tynku delikatna: przy ostrym słońcu w Blenderze mocniejsza wygląda jak pognieciony papier.
+const limewash: MaterialSpec = { texture: 'paint', tint: WAPNO, roughness: 0.95, normalScale: 0.12 };
 const oakHerringbone: MaterialSpec = { texture: 'oakHerringbone', tint: 0xd0ae8e, roughness: 0.8 }; // dąb jodełka, olej
 const terrazzo: MaterialSpec = { tiles: { w: 60, h: 60 }, color: 0xe6ddd0, grout: 0xd6ccbe, roughness: 0.5, speckle: true };
 
@@ -22,20 +23,20 @@ export const styl1Materials: Record<SurfaceKey, MaterialSpec> = {
   wallBathroom: limewash, // płytki w łazienkach to panele w danych mebli (do 120 / do sufitu)
   floor: oakHerringbone,
   floorBathroom: terrazzo,
-  ceiling: { ...limewash, normalScale: 0.12 },
+  ceiling: { ...limewash, normalScale: 0.05 },
   threshold: oakHerringbone, // jedna podłoga, bez progów
   concrete: { texture: 'smokedOak', tint: 0xb08d6c, roughness: 0.8 }, // balkon: deska tarasowa
   doorInterior: { color: 0xece4d8, roughness: 0.6 }, // drzwi bezprzylgowe w kolorze ściany
   handle: { color: 0xb8925a, roughness: 0.3, metalness: 1 }, // mosiężne klamki
-  doorEntrance: { texture: 'walnut', tint: 0xf5c8a0, roughness: 0.6 }, // od wewnątrz orzech
+  doorEntrance: { texture: 'walnut', tint: 0xf5c8a0, roughness: 0.6, normalScale: 0.15 }, // od wewnątrz orzech
   bulb: { color: 0xfff6e8, roughness: 0.3 }, // nieużywane – lampy są meblami
 };
 
 /** Paleta mebli stylu (nadpisuje FURNITURE_BASE). */
 export const styl1FurnitureMaterials: Record<string, MaterialSpec> = {
-  walnut: { texture: 'walnut', tint: 0xf5c8a0, roughness: 0.65 }, // orzech #5E3B26, mat
+  walnut: { texture: 'walnut', tint: 0xf5c8a0, roughness: 0.65, normalScale: 0.15 }, // orzech #5E3B26, gładki fornir, mat
   travertine: { tiles: { w: 150, h: 300 }, color: TRAWERTYN, grout: TRAWERTYN, roughness: 0.55, veins: true },
-  travertinePaint: { texture: 'paint', tint: 0xe2d2b8, roughness: 0.95, normalScale: 0.35 }, // ściana akcentowa w gabinecie
+  travertinePaint: { texture: 'paint', tint: 0xe2d2b8, roughness: 0.95, normalScale: 0.12 }, // ściana akcentowa w gabinecie
   limeFront: { tiles: { w: 8, h: 300 }, color: 0xece4d8, grout: 0xd9d0c2, roughness: 0.7 }, // fronty i panele z pionowym frezem
   greenTiles: { tiles: { w: 7.5, h: 30 }, color: ZIELEN, grout: 0x27392f, roughness: 0.15 }, // glazura 7,5 × 30 pionowo
   clayTiles: { tiles: { w: 3, h: 120 }, color: 0xc9978a, grout: 0xb07f72, roughness: 0.35 }, // ryflowane płytki „glina”

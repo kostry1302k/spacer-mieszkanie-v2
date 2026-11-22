@@ -21,7 +21,9 @@ args.add_argument('--size', type=int, default=4096)
 args.add_argument('--samples', type=int, default=256)
 args.add_argument('--preview', action='store_true', help='zamiast wypalania: render widoku z kamery (<out>-preview.png)')
 args.add_argument('--panorama', action='store_true', help='zamiast wypalania: panorama 360° z kamery (<out>.jpg, szerokość --size)')
+args.add_argument('--still', action='store_true', help='zamiast wypalania: zdjęcie 3:2 z kamery (<out>.jpg, szerokość --size), np. do ogłoszeń i porównań przed/po')
 args.add_argument('--camera', default='1.6,1.65,1.6,0', help='x,y,z (m, three.js), kierunek patrzenia w stopniach (0 = +z)')
+args.add_argument('--lens', type=float, default=18, help='ogniskowa w mm (pełna klatka) dla podglądu i zdjęcia')
 args.add_argument('--lamps-from', help='lampy z innego pliku świateł (np. wieczornego) – pomieszczenia bez okna na zdjęciach dziennych')
 args.add_argument('--lamp-gain', type=float, default=1, help='mnożnik mocy lamp (pomieszczenia oświetlone tylko lampami)')
 args.add_argument('--look', default='AgX - Base Contrast', help='krzywa kontrastu AgX (panoramy: łagodniejsza – mniej przepaleń przy oknie, jaśniejsze kąty)')
@@ -114,10 +116,10 @@ for i, lamp in enumerate(lights['lamps']):
     obj.location = (x, -z, y)
     scene.collection.objects.link(obj)
 
-if a.preview or a.panorama:
+if a.preview or a.panorama or a.still:
     x, y, z, yaw = (float(v) for v in a.camera.split(','))
     cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam'))
-    cam.data.lens = 18
+    cam.data.lens = a.lens
     cam.location = (x, -z, y)
     cam.rotation_euler = (math.radians(90), 0, math.radians(180 + yaw))
     scene.collection.objects.link(cam)
@@ -137,11 +139,12 @@ if a.preview or a.panorama:
         fill.rotation_euler = (math.pi, 0, 0)  # świeci w górę
         fill.visible_camera = False
         scene.collection.objects.link(fill)
-    if a.panorama:
-        # Panorama sferyczna (equirectangular 2:1) – środek obrazu to kierunek `yaw`; odszumianie OIDN z kolorem i normalnymi.
-        cam.data.type = 'PANO'
-        cam.data.panorama_type = 'EQUIRECTANGULAR'
-        scene.render.resolution_x, scene.render.resolution_y = a.size, a.size // 2
+    if a.panorama or a.still:
+        # Panorama sferyczna (equirectangular 2:1) – środek obrazu to kierunek `yaw` – albo zdjęcie 3:2; odszumianie OIDN z kolorem i normalnymi.
+        if a.panorama:
+            cam.data.type = 'PANO'
+            cam.data.panorama_type = 'EQUIRECTANGULAR'
+        scene.render.resolution_x, scene.render.resolution_y = a.size, a.size // 2 if a.panorama else a.size * 2 // 3
         scene.cycles.use_denoising = True
         scene.cycles.denoiser = 'OPENIMAGEDENOISE'
         scene.cycles.adaptive_threshold = 0.02
@@ -152,7 +155,7 @@ if a.preview or a.panorama:
         scene.render.resolution_x, scene.render.resolution_y = 800, 600
         scene.render.filepath = os.path.abspath(a.out + '-preview.png')
     bpy.ops.render.render(write_still=True)
-    stamp('panorama' if a.panorama else 'podgląd')
+    stamp('panorama' if a.panorama else 'zdjęcie' if a.still else 'podgląd')
     sys.exit(0)
 
 # ── Jedna bryła do wypalenia (otoczenie `env:*` zostaje osobno – tylko zasłania niebo) ──

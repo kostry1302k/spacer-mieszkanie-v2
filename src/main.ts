@@ -321,8 +321,9 @@ function goToRoom(room: Room): void {
   });
 }
 
+let modeLoading = Promise.resolve();
 store.subscribe((next, prev) => {
-  if (next.mode !== prev.mode) void loadMode(next.mode);
+  if (next.mode !== prev.mode) modeLoading = loadMode(next.mode);
   else if (variantOf(next) !== variantOf(prev)) rebuild();
   else applyView();
 });
@@ -332,13 +333,14 @@ hudRoot.appendChild(createViewPanel(store, availableViews, isTouch));
 const start = apartment.rooms.find((r) => r.id === 'hol')!.spawn;
 player.place(start.x, start.y, start.yaw);
 applyView();
-void loadMode(store.get().mode);
+modeLoading = loadMode(store.get().mode);
 
 const adaptive = new AdaptiveQuality(
   renderer,
   () => materials && Object.values(materials).forEach((mat) => (mat.needsUpdate = true)),
 );
 const tickFps = isDebug ? createFpsMeter() : null;
+const filming = isDebug && new URLSearchParams(location.search).has('film');
 if (isDebug) {
   // Pomoc do testów w konsoli: app.walk({ forward: 1, strafe: 0, run: false }, 2) symuluje 2 s chodu.
   const walk = (input: { forward: number; strafe: number; run: boolean }, seconds: number) => {
@@ -377,7 +379,24 @@ if (isDebug) {
     await upload(`${loadedMode}-${time}.json`, JSON.stringify(lights));
     return `${loadedMode}: ${(glb.byteLength / 1e6).toFixed(1)} MB, lamp: ${lights.lamps.length}`;
   };
-  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, walk, pick, adaptive, memory, stats, renderer, bench, exportBake, baked: () => baked } });
+  // Klipy wideo do wizytówki i ogłoszeń (adres z ?debug&film – bez automatycznego obniżania jakości):
+  // await app.film('spacer', 300, (t) => app.player.place(…)) → bake-work/film-spacer-0001.jpg…, potem scripts/film.swift składa MP4.
+  // Każda klatka renderowana synchronicznie, więc ruch jest płynny niezależnie od FPS.
+  const film = async (name: string, frames: number, shot: (t: number, i: number) => unknown) => {
+    for (let i = 0; i < frames; i++) {
+      await shot(frames > 1 ? i / (frames - 1) : 0, i);
+      await modeLoading;
+      const walk = store.get().view === 'walk';
+      if (walk) player.applyToCamera(walkCamera);
+      else views.update();
+      scene.updateMatrixWorld();
+      renderer.render(scene, walk ? walkCamera : views.camera);
+      const jpg = await new Promise<Blob>((done) => canvas.toBlob((b) => done(b!), 'image/jpeg', 0.92));
+      await fetch(`/__bake/upload?name=film-${name}-${String(i + 1).padStart(4, '0')}.jpg`, { method: 'POST', body: jpg });
+    }
+    return `${name}: ${frames} klatek`;
+  };
+  Object.assign(window, { app: { player, doors, desktop, touch, apartment, store, views, walk, pick, adaptive, memory, stats, renderer, bench, exportBake, film, baked: () => baked } });
 }
 
 const renderWalk = () => renderer.render(scene, walkCamera);
@@ -413,5 +432,5 @@ renderer.setAnimationLoop(() => {
   else renderer.render(scene, camera);
   if (labels.group.visible) labels.renderer.render(scene, camera);
   tickFps?.();
-  adaptive.tick(frameTime);
+  if (!filming) adaptive.tick(frameTime);
 });

@@ -20,7 +20,7 @@ export const styl2FurnitureMaterials: Record<string, MaterialSpec> = {
   octagon,
   seagrass: { tiles: { w: 2.5, h: 300 }, color: 0xd6c4a2, grout: 0xc4ae88, roughness: 1 }, // tapeta z trawy morskiej, owies
   graphite: { color: 0x3b3a38, roughness: 0.8 },
-  graphitePaint: { texture: 'paint', color: 0x4a4744, roughness: 0.9, normalScale: 0.3 },
+  graphitePaint: { texture: 'paint', color: 0x4a4744, roughness: 0.9, normalScale: 0.12 },
   leather: { color: 0x2a2624, roughness: 0.55 },
   rugDark: { texture: 'carpet', color: 0x4a4540, roughness: 1 },
   throw: { texture: 'fabric', color: 0xd8c8af, roughness: 1 }, // pled w kolorze trawertynu
